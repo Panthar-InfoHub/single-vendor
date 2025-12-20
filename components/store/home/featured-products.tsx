@@ -40,13 +40,17 @@ export async function FeaturedProducts({ title, filter }: FeaturedProductsProps)
   if (products.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-white">
+    <section className="py-12 md:py-16 bg-gray-50">
       <div className="container mx-auto px-6">
         <div className="mb-12">
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
-            {filter === "bestseller" ? "Best Sellers" : filter === "new" ? "New Arrivals" : "Featured"}
+          <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wider mb-3">
+            {filter === "bestseller"
+              ? "Best Sellers"
+              : filter === "new"
+              ? "New Arrivals"
+              : "Featured"}
           </p>
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{title}</h2>
           <p className="text-base md:text-lg text-gray-600">Discover our most popular products</p>
         </div>
 

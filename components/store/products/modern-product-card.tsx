@@ -128,7 +128,7 @@ export function ModernProductCard({ product }: ModernProductCardProps) {
             <Button
               onClick={handleAddToCart}
               disabled={isOutOfStock || isAddingToCart}
-              className="w-full h-10 text-sm font-medium bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300 disabled:opacity-50"
+              className="w-full h-10 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition-all duration-300 disabled:opacity-50 shadow-md hover:shadow-lg"
               size="sm"
             >
               {isAddingToCart ? (

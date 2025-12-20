@@ -20,14 +20,14 @@ const achievements = [
 
 export function Achievements() {
   return (
-    <section className="py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-6">
+    <section className="py-12 md:py-16 bg-white relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="mb-12 text-center">
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+          <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wider mb-3">
             Our Impact
           </p>
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Empowering the Next Generation
           </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -40,7 +40,7 @@ export function Achievements() {
           {achievements.map((achievement) => (
             <div
               key={achievement.id}
-              className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
+              className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-cyan-400"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
@@ -50,12 +50,11 @@ export function Achievements() {
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );

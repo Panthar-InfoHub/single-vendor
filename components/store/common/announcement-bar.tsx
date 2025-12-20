@@ -19,7 +19,7 @@ const BarContent = async () => {
   const { announcementText } = configResult.data;
 
   return (
-    <div className="bg-background text-foreground py-3 px-4 text-center text-sm font-semibold">
+    <div className="bg-cyan-600 text-white py-3 px-4 text-center text-sm font-semibold">
       {announcementText}
     </div>
   );

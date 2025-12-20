@@ -92,9 +92,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
         textArea.select();
 
         try {
-          document.execCommand('copy');
+          document.execCommand("copy");
         } catch (err) {
-          console.error('Fallback: Could not copy text', err);
+          console.error("Fallback: Could not copy text", err);
         }
 
         document.body.removeChild(textArea);
@@ -104,7 +104,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       toast.success("Link copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
       toast.error("Failed to copy link");
     }
   };
@@ -115,29 +115,37 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
           {product.isNewArrival && (
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-green-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">New Arrival</Badge>
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-green-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+              New Arrival
+            </Badge>
           )}
           {product.isBestSeller && (
-            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Bestseller</Badge>
+            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+              Bestseller
+            </Badge>
           )}
           {product.isFeatured && (
-            <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Featured</Badge>
+            <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+              Featured
+            </Badge>
           )}
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight tracking-tight">{product.title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight tracking-tight">
+          {product.title}
+        </h1>
         {/* Description */}
         {product.shortDescription && (
-          <p className="text-base text-gray-600 leading-relaxed ">
-            {product.shortDescription}
-          </p>
+          <p className="text-base text-gray-600 leading-relaxed ">{product.shortDescription}</p>
         )}
         <div className="flex items-center gap-4">
           {product.avgRating !== undefined && product.reviewCount !== undefined && (
             <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
               <div className="flex items-center gap-0.5">
                 <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                <span className="font-bold text-sm text-gray-900">{product.avgRating.toFixed(1)}</span>
+                <span className="font-bold text-sm text-gray-900">
+                  {product.avgRating.toFixed(1)}
+                </span>
               </div>
               <span className="text-gray-300 text-xs">|</span>
               <span className="text-xs text-gray-600 underline decoration-gray-300 underline-offset-4">
@@ -177,8 +185,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </p>
       </div>
 
-
-
       {/* Actions */}
       <div className="space-y-4 pt-2">
         {!isOutOfStock ? (
@@ -207,7 +213,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
             <Button
               size="lg"
-              className="flex-1 bg-gray-900 hover:bg-black text-white h-12 rounded-lg text-base font-semibold shadow-lg shadow-gray-200 hover:shadow-xl hover:shadow-gray-300 transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+              className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white h-12 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
               onClick={handleAddToCart}
               disabled={isAddingToCart}
             >
@@ -262,7 +268,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="pt-4 border-t border-gray-100">
           <div className="flex flex-wrap gap-2">
             {product.tags.map((tag) => (
-              <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors cursor-default">
+              <span
+                key={tag}
+                className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors cursor-default"
+              >
                 #{tag}
               </span>
             ))}
@@ -275,9 +284,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Share Product</DialogTitle>
-            <DialogDescription>
-              Copy the link below to share this product
-            </DialogDescription>
+            <DialogDescription>Copy the link below to share this product</DialogDescription>
           </DialogHeader>
           <div className="flex items-center space-x-2 mt-4">
             <div className="grid flex-1 gap-2">
@@ -293,7 +300,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
                 }}
               />
             </div>
-            <Button type="button" size="lg" className="px-4 bg-gray-900 hover:bg-black h-10" onClick={handleCopyLink}>
+            <Button
+              type="button"
+              size="lg"
+              className="px-4 bg-gray-900 hover:bg-black h-10"
+              onClick={handleCopyLink}
+            >
               {copied ? (
                 <>
                   <Check className="h-4 w-4 mr-2" />

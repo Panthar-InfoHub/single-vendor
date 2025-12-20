@@ -85,10 +85,10 @@ export async function ShopCategoryCards() {
     <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-6">
         <div className="mb-12">
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
+          <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wider mb-3">
             Categories
           </p>
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">Shop by Category</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Shop by Category</h2>
           <p className="text-base md:text-lg text-gray-600">Explore our wide range of categories</p>
         </div>
 
@@ -125,11 +125,12 @@ export async function ShopCategoryCards() {
                 href={`/categories/${category.slug}`}
                 className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] ${gridClasses}`}
               >
-                <div className={`relative w-full h-full ${
-                  // Aspect ratios - Mobile only
-                  isLargeSquare ? "aspect-square lg:aspect-auto" :
-                    "aspect-[2/1] lg:aspect-auto"
-                  }`}>
+                <div
+                  className={`relative w-full h-full ${
+                    // Aspect ratios - Mobile only
+                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-[2/1] lg:aspect-auto"
+                  }`}
+                >
                   {hasImage ? (
                     <>
                       <Image
@@ -138,8 +139,9 @@ export async function ShopCategoryCards() {
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes={
-                          isLargeSquare ? "(max-width: 768px) 100vw, 50vw" :
-                            "(max-width: 768px) 100vw, 50vw"
+                          isLargeSquare
+                            ? "(max-width: 768px) 100vw, 50vw"
+                            : "(max-width: 768px) 100vw, 50vw"
                         }
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -155,13 +157,19 @@ export async function ShopCategoryCards() {
                   )}
 
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
-                    <h3 className={`font-bold text-white mb-1 drop-shadow-lg ${isLargeSquare ? "text-xl md:text-3xl" : "text-base md:text-xl"
-                      }`}>
+                    <h3
+                      className={`font-bold text-white mb-1 drop-shadow-lg ${
+                        isLargeSquare ? "text-xl md:text-3xl" : "text-base md:text-xl"
+                      }`}
+                    >
                       {category.name}
                     </h3>
                     {minPrice && (
-                      <p className={`text-white/90 font-medium drop-shadow ${isLargeSquare ? "text-sm md:text-lg" : "text-xs md:text-sm"
-                        }`}>
+                      <p
+                        className={`text-white/90 font-medium drop-shadow ${
+                          isLargeSquare ? "text-sm md:text-lg" : "text-xs md:text-sm"
+                        }`}
+                      >
                         Starting from {formatPrice(minPrice)}
                       </p>
                     )}
