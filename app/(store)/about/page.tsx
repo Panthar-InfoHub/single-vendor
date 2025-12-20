@@ -29,7 +29,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
             {/* Image */}
             <div className="lg:col-span-2">
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
+              <div className="relative aspect-square max-h-80 rounded-2xl overflow-hidden">
                 <Image
                   src="/images/founder.jpg"
                   alt="Nishant Kishor Sharma - Founder & CEO"
@@ -113,7 +113,7 @@ export default function AboutPage() {
               "End-to-end Educational Technology Support",
             ].map((item, index) => (
               <div key={index} className="flex items-start gap-4 group">
-                <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gray-900 mt-3" />
+                <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-gray-900 mt-3" />
                 <p className="text-lg text-gray-900 leading-relaxed group-hover:text-gray-600 transition-colors">
                   {item}
                 </p>

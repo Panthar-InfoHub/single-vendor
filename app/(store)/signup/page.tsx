@@ -118,12 +118,11 @@ export default function SignupPage() {
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xs rounded-lg shadow-sm border border-gray-200">
         <div className="p-8 md:p-10">
           {/* Logo */}
-          <div className="flex justify-center items-center mx-auto mb-6 relative rounded-lg w-32 h-10">
+          <div className="flex justify-center items-center mx-auto mb-6 relative rounded-lg w-44 h-12">
             <Image
               src={siteConfig.logo.path}
               alt={siteConfig.logo.alt}
               fill
-              sizes="128px"
               className="object-contain"
             />
           </div>

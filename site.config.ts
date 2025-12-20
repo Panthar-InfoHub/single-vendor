@@ -7,7 +7,7 @@ export const siteConfig = {
   domain: "https://vyomtics.com",
   // Logo
   logo: {
-    path: "/logo.png",
+    path: "/logo-text.png",
     alt: "Vyomtics Logo",
   },
 
@@ -15,6 +15,7 @@ export const siteConfig = {
   contact: {
     email: "sales@vyomtics.com",
     phone: "+91 9758367474",
+    alternatePhone: "+91 9758367373",
     whatsapp: "919758367474", // Format: country code + number (no spaces or special characters)
     address: "Vyomtics\nDayalbagh, Agra\nUttar Pradesh, India",
   },

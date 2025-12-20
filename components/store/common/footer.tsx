@@ -13,12 +13,11 @@ export function Footer() {
           {/* About */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-15 h-15 relative overflow-hidden rounded-lg">
+              <div className="w-44 h-15 relative overflow-hidden rounded-lg">
                 <Image
                   src={siteConfig.logo.path}
                   alt={siteConfig.logo.alt}
                   fill
-                  sizes="60px"
                   className="object-contain"
                 />
               </div>
@@ -164,6 +163,12 @@ export function Footer() {
                   className="hover:text-primary transition-colors"
                 >
                   {siteConfig.contact.phone}
+                </a>,
+                <a
+                  href={`tel:${siteConfig.contact.alternatePhone}`}
+                  className="hover:text-primary transition-colors"
+                >
+                  {siteConfig.contact.alternatePhone}
                 </a>
               </li>
               <li className="flex items-center gap-2 text-sm text-foreground-muted">

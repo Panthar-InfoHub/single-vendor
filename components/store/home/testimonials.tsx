@@ -4,7 +4,7 @@ const testimonials = [
     content:
       "Vyomtics provides excellent-quality robotics, IoT, and drone components. Their products are reliable, affordable, and perfect for our projects. The team's technical support is outstanding.",
     author: "Prashant Kishor Sharma",
-    role: "Research Associate, Taiwan",
+    role: "Research Associate",
   },
   {
     id: 2,
@@ -20,22 +20,38 @@ const testimonials = [
     author: "Harsh Bhardwaj",
     role: "Startup Founder",
   },
+  
   {
     id: 4,
+    content:
+      "Vyomtics stands out for its strong technical foundation and practical approach to drone and robotics development. The company focus on hands-on training, quality hardware, and industry-aligned lab setups reflects a deep understanding of real-world engineering challenges. This is the kind of execution-driven innovation Indias drone ecosystem needs.",
+    author: "Natish Keshari ",
+    role: "Research associate IIT Jammu",
+  },
+  {
+    id: 5,
+    content:
+      "Vyomtics combines deep engineering insight with real-world drone applications. Their emphasis on precision, safety, and scalable design reflects the mindset of a mature technology organization, not just a training startup. It is encouraging to see such focused innovation emerging from Indias drone ecosystem.",
+    author: "Akash Sharma ",
+    role: "Research associate iit jammu",
+  },
+
+  {
+    id: 6,
     content:
       "We ordered drone and IoT products in bulk from Vyomtics. The pricing was competitive, quality was top-notch, and every item was tested. Highly satisfied and looking forward to long-term collaboration.",
     author: "Skillship Edutech Pvt. Ltd.",
     role: "",
   },
   {
-    id: 5,
+    id: 7,
     content:
       "Vyomtics, led by Nishant Kishor Sharma, is doing exceptional work in robotics, IoT, and drone technology. Their innovative approach and commitment to quality make them a trusted technology partner.",
     author: "Praphull Gautam",
     role: "Founder Drobonation",
   },
   {
-    id: 6,
+    id: 8,
     content:
       "The training provided by Vyomtics was extremely effective. Trainers were highly skilled, and the sessions were completely practical and industry-focused. Excellent experience for our students.",
     author: "Sharda University",

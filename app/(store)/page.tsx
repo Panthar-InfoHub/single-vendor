@@ -5,6 +5,8 @@ import { FeaturedProducts } from "@/components/store/home/featured-products";
 import { TrustBadges } from "@/components/store/home/trust-badges";
 import { Testimonials } from "@/components/store/home/testimonials";
 import { FAQSection } from "@/components/store/home/faq-section";
+import { Achievements } from "@/components/store/home/achievements";
+import { LabSetup } from "@/components/store/home/lab-setup";
 import { prisma } from "@/prisma/db";
 
 export const metadata = generatePageMetadata({
@@ -37,6 +39,8 @@ export default async function HomePage() {
       <FeaturedProducts title="SHOP OUR BESTSELLERS" filter="bestseller" />
       <Testimonials />
       <FeaturedProducts title="NEW LAUNCH" filter="new" />
+      <Achievements />
+      <LabSetup />
       <TrustBadges />
       <FAQSection faqs={faqs} />
     </>

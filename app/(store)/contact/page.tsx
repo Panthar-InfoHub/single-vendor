@@ -1,9 +1,11 @@
 import { ContactForm } from "@/components/store/contact/contact-form";
 import { generatePageMetadata } from "@/lib/metadata";
+import { siteConfig } from "@/site.config";
 
 export const metadata = generatePageMetadata({
   title: "Contact Us",
-  description: "Get in touch with Vyomtics. We're here to help with Robotics, IoT, AI, and Drone solutions.",
+  description:
+    "Get in touch with Vyomtics. We're here to help with Robotics, IoT, AI, and Drone solutions.",
   path: "/contact",
 });
 
@@ -18,7 +20,8 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-base md:text-lg lg:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-              We're here to help you with Robotics, IoT, AI, and Drone solutions. Reach out to us anytime.
+              We're here to help you with Robotics, IoT, AI, and Drone solutions. Reach out to us
+              anytime.
             </p>
           </div>
         </div>
@@ -28,7 +31,6 @@ export default function ContactPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
-
             {/* Contact Information */}
             <div className="lg:col-span-2 space-y-10">
               <div>
@@ -47,8 +49,12 @@ export default function ContactPage() {
                     Phone
                   </h3>
                   <div className="space-y-2 text-gray-900">
-                    <p className="text-base">+91 9758367474</p>
-                    <p className="text-base">+91 9758367373</p>
+                    <a href={`tel:${siteConfig.contact.phone}`} className="text-base block">
+                      {siteConfig.contact.phone}
+                    </a>
+                    <a href={`tel:${siteConfig.contact.alternatePhone}`} className="text-base block">
+                      {siteConfig.contact.alternatePhone}
+                    </a>
                   </div>
                 </div>
 
@@ -69,8 +75,10 @@ export default function ContactPage() {
                     Visit Us
                   </h3>
                   <p className="text-base text-gray-900 leading-relaxed">
-                    Vyomtics<br />
-                    Dayalbagh, Agra<br />
+                    Vyomtics powered by N.L Enterprises
+                    <br />
+                    Dayalbagh, Agra
+                    <br />
                     Uttar Pradesh, India
                   </p>
                 </div>
@@ -94,13 +102,10 @@ export default function ContactPage() {
                 <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                   Send us a message
                 </h3>
-                <p className="text-base text-gray-600">
-                  We'll receive your message via WhatsApp.
-                </p>
+                <p className="text-base text-gray-600">We'll receive your message via WhatsApp.</p>
               </div>
               <ContactForm />
             </div>
-
           </div>
         </div>
       </section>

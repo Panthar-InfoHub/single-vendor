@@ -52,16 +52,15 @@ export function Header() {
         <div className="flex items-center justify-between gap-2 sm:gap-4 py-2">
           {/* Logo - Left */}
           <Link href="/" className="flex items-center gap-1 shrink-0">
-            <div className="rounded-lg relative w-12 h-12">
+            <div className="rounded-lg relative w-44 h-12">
               <Image
                 src={siteConfig.logo.path}
                 alt={siteConfig.logo.alt}
                 fill
-                sizes="96px"
                 className="rounded-lg object-contain"
               />
             </div>
-            <span className="text-xl font-semibold  sm:inline">{siteConfig.name}</span>
+            {/* <span className="text-xl font-semibold  sm:inline">{siteConfig.name}</span> */}
           </Link>
 
           {/* Desktop Navigation */}
