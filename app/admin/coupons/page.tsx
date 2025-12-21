@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Loading skeleton for the table
 function CouponsTableSkeleton() {

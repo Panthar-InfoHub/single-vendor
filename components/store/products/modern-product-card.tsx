@@ -97,7 +97,7 @@ export function ModernProductCard({ product }: ModernProductCardProps) {
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1 border-t">
-          <h3 className="font-medium text-sm text-gray-900 line-clamp-2 mb-4 leading-relaxed min-h-[40px]">
+          <h3 className="font-medium text-sm text-gray-900 line-clamp-2 mb-4 leading-relaxed min-h-10">
             {product.title}
           </h3>
 

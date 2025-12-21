@@ -128,7 +128,7 @@ export async function ShopCategoryCards() {
                 <div
                   className={`relative w-full h-full ${
                     // Aspect ratios - Mobile only
-                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-[2/1] lg:aspect-auto"
+                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-2/1lg:aspect-auto"
                   }`}
                 >
                   {hasImage ? (
@@ -144,15 +144,15 @@ export async function ShopCategoryCards() {
                             : "(max-width: 768px) 100vw, 50vw"
                         }
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     </>
                   ) : (
                     <>
                       <div
-                        className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-700 group-hover:scale-110`}
+                        className={`absolute inset-0 bg-linear-to-br ${gradient} transition-transform duration-700 group-hover:scale-110`}
                       />
                       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.8)_0%,transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.6)_0%,transparent_50%)]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
                     </>
                   )}
 

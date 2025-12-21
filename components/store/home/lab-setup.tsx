@@ -41,7 +41,7 @@ export function LabSetup() {
               className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-cyan-400"
             >
               {/* Image Container */}
-              <div className="relative aspect-[16/10] overflow-hidden">
+              <div className="relative aspect-16/10 overflow-hidden">
                 <Image
                   src={lab.image}
                   alt={lab.alt}
@@ -49,7 +49,7 @@ export function LabSetup() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-gray-900/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-gray-900/70 via-gray-900/20 to-transparent" />
 
                 {/* Title Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">

@@ -1,7 +1,7 @@
 import { getAllFAQs } from "@/actions/admin/cms.actions";
 import { FAQManager } from "@/components/admin/faq/faq-manager";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "FAQ Management | Admin",

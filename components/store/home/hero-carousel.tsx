@@ -86,7 +86,7 @@ export function HeroCarousel() {
   }, [isAutoPlaying, nextSlide]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-gradient-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
+    <div className="relative w-full overflow-hidden bg-linear-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
       <div className="relative h-[450px] md:h-[550px] lg:h-[650px]">
         {slides.map((slide, index) => (
           <div

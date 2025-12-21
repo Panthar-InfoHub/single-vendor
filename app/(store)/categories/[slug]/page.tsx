@@ -3,7 +3,12 @@ import { prisma } from "@/prisma/db";
 import { notFound } from "next/navigation";
 import { ModernProductCard } from "@/components/store/products/modern-product-card";
 import { ProductSort } from "@/components/store/products/product-sort";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ProductCardSkeleton } from "@/components/store/products/product-list-skeleton";
 import Image from "next/image";
+
+export const experimental_ppr = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -27,16 +32,8 @@ interface SearchParams {
   sort?: string;
 }
 
-export default async function CategoryPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<SearchParams>;
-}) {
-  const { slug } = await params;
-  const { sort = "newest" } = await searchParams;
-
+// Separate component for category content to enable streaming
+async function CategoryContent({ slug, sort }: { slug: string; sort: string }) {
   const category = await prisma.category.findUnique({
     where: { slug, isActive: true },
     include: {
@@ -88,7 +85,7 @@ export default async function CategoryPage({
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
       {/* Minimal Breadcrumb Header */}
       <div className="container mx-auto px-4 py-6 border-b border-gray-100">
         <nav className="text-sm text-gray-500 font-medium mb-3">
@@ -116,11 +113,7 @@ export default async function CategoryPage({
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Subcategories</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {category.children.map((child) => (
-                <a
-                  key={child.id}
-                  href={`/categories/${child.slug}`}
-                  className="group block"
-                >
+                <a key={child.id} href={`/categories/${child.slug}`} className="group block">
                   <div className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
                     <div className="relative aspect-square bg-gray-50">
                       {child.image ? (
@@ -154,7 +147,7 @@ export default async function CategoryPage({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">
-                {category.children.length > 0 ? `All Products in ${category.name}` : 'Products'}
+                {category.children.length > 0 ? `All Products in ${category.name}` : "Products"}
               </h2>
               <ProductSort />
             </div>
@@ -176,12 +169,74 @@ export default async function CategoryPage({
             <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
               We couldn't find any products in this category at the moment.
             </p>
-            <a href="/products" className="inline-flex items-center justify-center px-6 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+            <a
+              href="/products"
+              className="inline-flex items-center justify-center px-6 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >
               Browse All Products
             </a>
           </div>
         )}
       </div>
+    </>
+  );
+}
+
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<SearchParams>;
+}) {
+  const { slug } = await params;
+  const { sort = "newest" } = await searchParams;
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Suspense
+        fallback={
+          <>
+            {/* Header Skeleton */}
+            <div className="container mx-auto px-4 py-6 border-b border-gray-100">
+              <Skeleton className="h-4 w-48 mb-3" />
+              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+
+            {/* Content Skeleton */}
+            <div className="container mx-auto px-4 py-8">
+              {/* Subcategories Skeleton */}
+              <div className="mb-10">
+                <Skeleton className="h-6 w-32 mb-4" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="aspect-square w-full rounded-lg" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Products Skeleton */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-10 w-40" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        }
+      >
+        <CategoryContent slug={slug} sort={sort} />
+      </Suspense>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { WishlistItemCard } from "@/components/store/account/wishlist-item-card";
 import Link from "next/link";
@@ -33,8 +34,36 @@ export default function WishlistPage() {
 
   if (isPending || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-4 px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-pink-50 rounded-lg">
+              <Heart className="h-5 w-5 text-pink-600" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Wishlist Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+              <Skeleton className="aspect-square w-full rounded-lg mb-3" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-3/4 mb-3" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-5 w-16" />
+              </div>
+              <Skeleton className="h-10 w-full mt-3" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
