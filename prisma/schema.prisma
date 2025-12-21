@@ -370,8 +370,9 @@ model HeroSlide {
   isActive  Boolean   @default(true)
 
   // Image - required for both types
-  image    String
-  imageAlt String @default("")
+  image       String
+  mobileImage String? // Optional mobile-specific image
+  imageAlt    String  @default("")
 
   // Content - only for IMAGE_WITH_CONTENT
   title       String?

@@ -69,7 +69,7 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
 
   return (
     <div className="relative w-full overflow-hidden bg-linear-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
-      <div className="relative h-[280px] sm:h-[380px] md:h-[480px] lg:h-[550px]">
+      <div className="relative h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px]">
         {activeSlides.map((slide, index) => (
           <div
             key={slide.id}
@@ -80,23 +80,37 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
             <div className="h-full">
               {slide.slideType === "IMAGE_ONLY" ? (
                 // Full-width image slide with proper aspect ratio
-                <div className="relative w-full h-full">
-                  <Image
-                    src={slide.image}
-                    alt={slide.imageAlt || "Hero banner"}
-                    fill
-                    className="object-cover object-center"
-                    sizes="100vw"
-                    priority={index === 0}
-                  />
-                </div>
+                <>
+                  {/* Desktop Image */}
+                  <div className="hidden md:block relative w-full h-full">
+                    <Image
+                      src={slide.image}
+                      alt={slide.imageAlt || "Hero banner"}
+                      fill
+                      className="object-cover object-center"
+                      sizes="100vw"
+                      priority={index === 0}
+                    />
+                  </div>
+                  {/* Mobile Image */}
+                  <div className="md:hidden relative w-full h-full">
+                    <Image
+                      src={slide.mobileImage || slide.image}
+                      alt={slide.imageAlt || "Hero banner"}
+                      fill
+                      className="object-cover object-center"
+                      sizes="100vw"
+                      priority={index === 0}
+                    />
+                  </div>
+                </>
               ) : (
                 // Image with content slide - responsive layout
                 <>
                   {/* Mobile: Background image with content overlay */}
                   <div className="lg:hidden relative w-full h-full">
                     <Image
-                      src={slide.image}
+                      src={slide.mobileImage || slide.image}
                       alt={slide.imageAlt || "Hero banner"}
                       fill
                       className="object-cover object-center"

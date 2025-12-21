@@ -30,6 +30,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
   const [order, setOrder] = useState(slide?.order || 0);
   const [isActive, setIsActive] = useState(slide?.isActive ?? true);
   const [image, setImage] = useState(slide?.image || "");
+  const [mobileImage, setMobileImage] = useState(slide?.mobileImage || "");
   const [imageAlt, setImageAlt] = useState(slide?.imageAlt || "");
   const [title, setTitle] = useState(slide?.title || "");
   const [subtitle, setSubtitle] = useState(slide?.subtitle || "");
@@ -38,6 +39,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
   const [buttonLink, setButtonLink] = useState(slide?.buttonLink || "");
 
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingMobile, setIsUploadingMobile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -74,6 +76,39 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
     }
   };
 
+  const handleMobileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setIsUploadingMobile(true);
+    setError("");
+
+    try {
+      const result = await uploadToCloud(file, "hero-slides/mobile");
+      if (result.success && result.url) {
+        setMobileImage(result.url);
+        toast.success("Mobile image uploaded successfully");
+      } else {
+        toast.error(result.error || "Failed to upload mobile image");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload mobile image");
+    } finally {
+      setIsUploadingMobile(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -95,6 +130,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
       order,
       isActive,
       image,
+      mobileImage: mobileImage || undefined,
       imageAlt,
       title: slideType === "IMAGE_WITH_CONTENT" ? title : undefined,
       subtitle: slideType === "IMAGE_WITH_CONTENT" ? subtitle : undefined,
@@ -116,7 +152,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
@@ -176,18 +212,12 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
           {/* Image Upload */}
           <div className="space-y-3 mb-6">
             <Label htmlFor="image">
-              Hero Image <span className="text-destructive">*</span>
+              Desktop Image <span className="text-destructive">*</span>
             </Label>
             <div className="space-y-3">
               {image && (
-                <div className="relative h-48 w-full rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={image}
-                    alt="Preview"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 768px"
-                  />
+                <div className="relative aspect-square w-full max-w-sm rounded-lg overflow-hidden bg-muted">
+                  <Image src={image} alt="Preview" fill className="object-contain" sizes="400px" />
                 </div>
               )}
               <Input
@@ -200,6 +230,41 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
               {isUploading && <p className="text-sm text-muted-foreground">Uploading image...</p>}
               <p className="text-xs text-muted-foreground">
                 Max file size: 5MB. Supported formats: JPG, PNG, WebP
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile Image Upload */}
+          <div className="space-y-3 mb-6">
+            <Label htmlFor="mobileImage">
+              Mobile Image <span className="text-muted-foreground">(Optional)</span>
+            </Label>
+            <div className="space-y-3">
+              {mobileImage && (
+                <div className="relative aspect-square w-full max-w-sm rounded-lg overflow-hidden bg-muted">
+                  <Image
+                    src={mobileImage}
+                    alt="Mobile Preview"
+                    fill
+                    className="object-contain"
+                    sizes="400px"
+                  />
+                </div>
+              )}
+              <Input
+                id="mobileImage"
+                type="file"
+                accept="image/*"
+                onChange={handleMobileImageUpload}
+                disabled={isUploadingMobile}
+              />
+              {isUploadingMobile && (
+                <p className="text-sm text-muted-foreground">Uploading mobile image...</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {slideType === "IMAGE_ONLY"
+                  ? "Recommended: 1080×1200px (portrait). If not provided, desktop image will be used."
+                  : "Recommended: 1080×1350px (portrait). If not provided, desktop image will be used."}
               </p>
             </div>
           </div>
