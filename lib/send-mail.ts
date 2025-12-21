@@ -1,26 +1,16 @@
 import { orderPlacedAdmin, orderPlacedUser } from "@/templates/Email";
 import nodemailer from "nodemailer";
 
-// Validate email configuration at startup
-if (!process.env.ADMIN_EMAIL || !process.env.GOOGLE_APP_PASSWORD) {
-  console.warn(
-    "⚠️  WARNING: Email credentials not configured!\n" +
-      "   ADMIN_EMAIL: " +
-      (process.env.ADMIN_EMAIL ? "✓ Set" : "✗ Missing") +
-      "\n" +
-      "   GOOGLE_APP_PASSWORD: " +
-      (process.env.GOOGLE_APP_PASSWORD ? "✓ Set" : "✗ Missing") +
-      "\n" +
-      "   See GMAIL_SETUP_GUIDE.md for setup instructions."
-  );
-}
-
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure:true, // true for 465, false for 587
+  authMethod: "LOGIN",
   auth: {
-    user: process.env.ADMIN_EMAIL,
-    pass: process.env.GOOGLE_APP_PASSWORD,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
+
 });
 
 export const sendMail = async (
@@ -28,23 +18,13 @@ export const sendMail = async (
   emailContent: { subject: string; text: string; html: string }
 ) => {
   try {
-    // Check if credentials are configured
-    if (!process.env.ADMIN_EMAIL || !process.env.GOOGLE_APP_PASSWORD) {
-      const errorMsg =
-        "Email credentials not configured. Please set ADMIN_EMAIL and GOOGLE_APP_PASSWORD in .env file. " +
-        "See GMAIL_SETUP_GUIDE.md for instructions.";
-      console.error("❌ " + errorMsg);
-      throw new Error(errorMsg);
-    }
-
     const mailOptions = {
-      from: process.env.ADMIN_EMAIL,
+      from: process.env.SMTP_FROM,
       to,
       subject: emailContent.subject,
       text: emailContent.text,
       html: emailContent.html,
     };
-
     const result = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully:", result.messageId, "to", to);
     return result;
@@ -52,16 +32,12 @@ export const sendMail = async (
     // Provide helpful error messages based on error type
     if (error.code === "EAUTH") {
       console.error(
-        "\n❌ Gmail Authentication Failed!\n" +
-          "   This usually means:\n" +
-          "   1. GOOGLE_APP_PASSWORD is incorrect or missing\n" +
-          "   2. You haven't created a Gmail App Password yet\n" +
-          "   3. You're using your regular password (won't work)\n" +
-          "\n📖 Solution: See GMAIL_SETUP_GUIDE.md for step-by-step instructions\n" +
-          "   Quick link: https://myaccount.google.com/apppasswords\n"
+        "\n❌ authentication failed.\n"
       );
     } else if (error.code === "ECONNECTION") {
-      console.error("❌ Cannot connect to Gmail. Check your internet connection.");
+      console.error(
+        "❌ Cannot connect to SMTP server. Check your internet connection and SMTP_HOST."
+      );
     } else {
       console.error("❌ Error sending email:", error.message);
     }

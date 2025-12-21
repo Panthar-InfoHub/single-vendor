@@ -15,9 +15,7 @@ export const orderPlacedUser = (orderDetails: {
     .map(
       (item) => `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${
-          item.name
-        }</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${
           item.quantity
         }</td>
@@ -34,20 +32,13 @@ export const orderPlacedUser = (orderDetails: {
 
   return {
     subject: `Order Confirmation - Order #${orderDetails.orderId}`,
-    text: `Dear ${orderDetails.customerName},
+    text: `${orderDetails.customerName ? `Dear ${orderDetails.customerName},` : "Hello,"}
 
-Thank you for your order! Your order #${
-      orderDetails.orderId
-    } has been successfully placed.
+Thank you for your order! Your order #${orderDetails.orderId} has been successfully placed.
 
 Order Details:
 ${orderDetails.items
-  .map(
-    (item) =>
-      `- ${item.name} x ${item.quantity} = ₹${(
-        item.price * item.quantity
-      ).toFixed(2)}`
-  )
+  .map((item) => `- ${item.name} x ${item.quantity} = ₹${(item.price * item.quantity).toFixed(2)}`)
   .join("\n")}
 
 Total Amount: ₹${orderDetails.totalAmount.toFixed(2)}
@@ -56,59 +47,63 @@ Shipping Address: ${orderDetails.shippingAddress}
 We'll send you tracking information once your order ships.
 
 Best regards,
-Karnika Team`,
+Vyomtics Team`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #2c3e50; margin-bottom: 10px;">Order Confirmation</h1>
-          <p style="color: #7f8c8d; font-size: 16px;">Thank you for your order!</p>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <div style="background-color: #000000; padding: 32px 24px; border-bottom: 1px solid #e5e7eb;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 500; letter-spacing: 1px;">VYOMTICS</h1>
         </div>
         
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h2 style="color: #2c3e50; margin-top: 0;">Hello ${
-            orderDetails.customerName
-          },</h2>
-          <p>Your order <strong>#${
+        <div style="padding: 40px 24px;">
+          <h2 style="color: #111827; margin: 0 0 8px 0; font-size: 16px; font-weight: 500;">Order Confirmation</h2>
+          <p style="color: #6b7280; margin: 0 0 32px 0; font-size: 14px;">Order #${
             orderDetails.orderId
-          }</strong> has been successfully placed and is being processed.</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Order Details</h3>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <thead>
-              <tr style="background-color: #3498db; color: white;">
-                <th style="padding: 12px; text-align: left;">Item</th>
-                <th style="padding: 12px; text-align: center;">Quantity</th>
-                <th style="padding: 12px; text-align: right;">Price</th>
-                <th style="padding: 12px; text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsList}
-            </tbody>
-            <tfoot>
-              <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="3" style="padding: 12px; text-align: right;">Total Amount:</td>
-                <td style="padding: 12px; text-align: right; color: #e74c3c;">₹${orderDetails.totalAmount.toFixed(
-                  2
-                )}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        
-        <div style="background-color: #e8f5e8; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-          <h4 style="color: #27ae60; margin-top: 0;">Shipping Information</h4>
-          <p style="margin: 5px 0;"><strong>Address:</strong> ${
-            orderDetails.shippingAddress
           }</p>
           
+          <p style="color: #111827; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
+            ${orderDetails.customerName ? `Hello ${orderDetails.customerName},` : "Hello,"}<br><br>
+            Thank you for your order. We have received your order and it is being processed.
+          </p>
+          
+          <div style="margin-bottom: 32px;">
+            <h3 style="color: #111827; margin: 0 0 16px 0; font-size: 15px; font-weight: 500;">Order Details</h3>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+              <thead>
+                <tr style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                  <th style="padding: 12px; text-align: left; font-weight: 500; font-size: 13px; color: #374151;">Item</th>
+                  <th style="padding: 12px; text-align: center; font-weight: 500; font-size: 13px; color: #374151;">Qty</th>
+                  <th style="padding: 12px; text-align: right; font-weight: 500; font-size: 13px; color: #374151;">Price</th>
+                  <th style="padding: 12px; text-align: right; font-weight: 500; font-size: 13px; color: #374151;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsList}
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 2px solid #e5e7eb;">
+                  <td colspan="3" style="padding: 12px; text-align: right; font-weight: 500; font-size: 14px; color: #111827;">Total</td>
+                  <td style="padding: 12px; text-align: right; color: #111827; font-size: 14px; font-weight: 600;">₹${orderDetails.totalAmount.toFixed(
+                    2
+                  )}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 24px; margin-bottom: 32px;">
+            <h3 style="color: #111827; margin: 0 0 12px 0; font-size: 15px; font-weight: 500;">Shipping Address</h3>
+            <p style="margin: 0; color: #6b7280; line-height: 1.6; font-size: 14px;">${
+              orderDetails.shippingAddress
+            }</p>
+          </div>
+          
+          <p style="color: #6b7280; margin: 0; font-size: 14px; line-height: 1.6;">
+            We will send you tracking information once your order ships.
+          </p>
         </div>
         
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="color: #7f8c8d;">We'll send you tracking information once your order ships.</p>
-          <p style="color: #2c3e50; font-weight: bold;">Thank you for choosing Karnika!</p>
+        <div style="background-color: #f9fafb; padding: 24px; border-top: 1px solid #e5e7eb;">
+          <p style="color: #6b7280; margin: 0; font-size: 13px; text-align: center;">Vyomtics</p>
         </div>
       </div>
     `,
@@ -135,9 +130,7 @@ export const orderPlacedAdmin = (orderDetails: {
     .map(
       (item) => `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${
-          item.name
-        }</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${
           item.quantity
         }</td>
@@ -153,25 +146,20 @@ export const orderPlacedAdmin = (orderDetails: {
     .join("");
 
   return {
-    subject: `🔔 New Order Received - Order #${orderDetails.orderId}`,
+    subject: `New Order Received - Order #${orderDetails.orderId}`,
     text: `New Order Alert!
 
 Order ID: ${orderDetails.orderId}
 Order Date: ${orderDetails.orderDate}
 
 Customer Information:
-Name: ${orderDetails.customerName}
-Email: ${orderDetails.customerEmail}
-Phone: ${orderDetails.customerPhone}
+Name: ${orderDetails.customerName || "Not provided"}
+Email: ${orderDetails.customerEmail || "Not provided"}
+Phone: ${orderDetails.customerPhone || "Not provided"}
 
 Order Items:
 ${orderDetails.items
-  .map(
-    (item) =>
-      `- ${item.name} x ${item.quantity} = ₹${(
-        item.price * item.quantity
-      ).toFixed(2)}`
-  )
+  .map((item) => `- ${item.name} x ${item.quantity} = ₹${(item.price * item.quantity).toFixed(2)}`)
   .join("\n")}
 
 Total Amount: ₹${orderDetails.totalAmount.toFixed(2)}
@@ -180,89 +168,93 @@ Shipping Address: ${orderDetails.shippingAddress}
 
 Please process this order promptly.
 
-Karnika Admin System`,
+Vyomtics Admin System`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px; background-color: #e74c3c; color: white; padding: 20px; border-radius: 8px;">
-          <h1 style="margin: 0; font-size: 24px;">🔔 New Order Alert!</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px;">Order #${
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 650px; margin: 0 auto; background-color: #ffffff;">
+        <div style="background-color: #000000; padding: 32px 24px; border-bottom: 1px solid #e5e7eb;">
+          <h1 style="color: #ffffff; margin: 0 0 8px 0; font-size: 20px; font-weight: 500; letter-spacing: 1px;">VYOMTICS</h1>
+          <p style="color: #9ca3af; margin: 0; font-size: 13px;">Admin Portal</p>
+        </div>
+        
+        <div style="background-color: #f9fafb; padding: 16px 24px; border-bottom: 1px solid #e5e7eb;">
+          <p style="color: #111827; margin: 0; font-size: 14px; font-weight: 500;">New Order: #${
             orderDetails.orderId
+          }</p>
+          <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 13px;">${
+            orderDetails.orderDate
           }</p>
         </div>
         
-        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-          <h3 style="color: #856404; margin-top: 0;">⚡ Action Required</h3>
-          <p style="color: #856404; margin-bottom: 0;">A new order has been placed and requires processing.</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px;">Customer Information</h3>
-          <table style="width: 100%; margin-top: 10px;">
-            <tr>
-              <td style="padding: 8px; font-weight: bold; width: 30%;">Name:</td>
-              <td style="padding: 8px;">${orderDetails.customerName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; font-weight: bold;">Email:</td>
-              <td style="padding: 8px;"><a href="mailto:${
-                orderDetails.customerEmail
-              }">${orderDetails.customerEmail}</a></td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; font-weight: bold;">Phone:</td>
-              <td style="padding: 8px;"><a href="tel:${
-                orderDetails.customerPhone
-              }">${orderDetails.customerPhone}</a></td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; font-weight: bold;">Order Date:</td>
-              <td style="padding: 8px;">${orderDetails.orderDate}</td>
-            </tr>
-          </table>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px;">Order Details</h3>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <thead>
-              <tr style="background-color: #e74c3c; color: white;">
-                <th style="padding: 12px; text-align: left;">Item</th>
-                <th style="padding: 12px; text-align: center;">Qty</th>
-                <th style="padding: 12px; text-align: right;">Price</th>
-                <th style="padding: 12px; text-align: right;">Total</th>
+        <div style="padding: 32px 24px;">
+          <div style="margin-bottom: 32px;">
+            <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 15px; font-weight: 500;">Customer Information</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px; font-weight: 500; width: 30%; color: #6b7280; font-size: 13px;">Name</td>
+                <td style="padding: 12px; color: #111827; font-size: 14px;">${
+                  orderDetails.customerName || "Not provided"
+                }</td>
               </tr>
-            </thead>
-            <tbody>
-              ${itemsList}
-            </tbody>
-            <tfoot>
-              <tr style="background-color: #f8f9fa; font-weight: bold;">
-                <td colspan="3" style="padding: 12px; text-align: right;">Total Amount:</td>
-                <td style="padding: 12px; text-align: right; color: #e74c3c; font-size: 18px;">₹${orderDetails.totalAmount.toFixed(
-                  2
-                )}</td>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px; font-weight: 500; color: #6b7280; font-size: 13px;">Email</td>
+                <td style="padding: 12px;">${
+                  orderDetails.customerEmail
+                    ? `<a href="mailto:${orderDetails.customerEmail}" style="color: #111827; text-decoration: none; font-size: 14px;">${orderDetails.customerEmail}</a>`
+                    : '<span style="color: #111827; font-size: 14px;">Not provided</span>'
+                }</td>
               </tr>
-            </tfoot>
-          </table>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px; font-weight: 500; color: #6b7280; font-size: 13px;">Phone</td>
+                <td style="padding: 12px;">${
+                  orderDetails.customerPhone
+                    ? `<a href="tel:${orderDetails.customerPhone}" style="color: #111827; text-decoration: none; font-size: 14px;">${orderDetails.customerPhone}</a>`
+                    : '<span style="color: #111827; font-size: 14px;">Not provided</span>'
+                }</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px; font-weight: 500; color: #6b7280; font-size: 13px;">Payment</td>
+                <td style="padding: 12px; color: #111827; font-size: 14px;">${
+                  orderDetails.paymentMethod || "Not specified"
+                }</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div style="margin-bottom: 32px;">
+            <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 15px; font-weight: 500;">Order Items</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+              <thead>
+                <tr style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                  <th style="padding: 12px; text-align: left; font-weight: 500; font-size: 13px; color: #374151;">Item</th>
+                  <th style="padding: 12px; text-align: center; font-weight: 500; font-size: 13px; color: #374151;">Qty</th>
+                  <th style="padding: 12px; text-align: right; font-weight: 500; font-size: 13px; color: #374151;">Price</th>
+                  <th style="padding: 12px; text-align: right; font-weight: 500; font-size: 13px; color: #374151;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsList}
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 2px solid #e5e7eb; background-color: #f9fafb;">
+                  <td colspan="3" style="padding: 12px; text-align: right; font-weight: 600; font-size: 14px; color: #111827;">Total</td>
+                  <td style="padding: 12px; text-align: right; color: #111827; font-size: 15px; font-weight: 600;">₹${orderDetails.totalAmount.toFixed(
+                    2
+                  )}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 24px;">
+            <h2 style="color: #111827; margin: 0 0 12px 0; font-size: 15px; font-weight: 500;">Shipping Address</h2>
+            <p style="margin: 0; color: #6b7280; line-height: 1.6; font-size: 14px;">${
+              orderDetails.shippingAddress
+            }</p>
+          </div>
         </div>
         
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 10px;">Shipping & Payment</h3>
-          <table style="width: 100%; margin-top: 10px;">
-            <tr>
-              <td style="padding: 8px; font-weight: bold; width: 30%;">Payment Method:</td>
-              <td style="padding: 8px;">${orderDetails.paymentMethod}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px; font-weight: bold; vertical-align: top;">Shipping Address:</td>
-              <td style="padding: 8px;">${orderDetails.shippingAddress}</td>
-            </tr>
-          </table>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 6px;">
-          <p style="color: #2c3e50; font-weight: bold; margin: 0;">Please process this order promptly!</p>
-          <p style="color: #7f8c8d; margin: 10px 0 0 0; font-size: 14px;">Karnika Admin System</p>
+        <div style="background-color: #f9fafb; padding: 24px; border-top: 1px solid #e5e7eb;">
+          <p style="color: #6b7280; margin: 0; font-size: 13px; text-align: center;">Vyomtics Admin System</p>
         </div>
       </div>
     `,
@@ -271,29 +263,48 @@ Karnika Admin System`,
 
 export const ResetPasswordEmailTemplate = ({ link }: { link: URL }) => {
   return {
-    subject: "Reset your password - Karnika",
+    subject: "Reset your password - Vyomtics",
     text: `Click the link to reset your password: ${link}`,
     html: `
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-            <h2 style="color: #333; text-align: center;">Reset Your Password</h2>
-            <p style="color: #666; line-height: 1.6;">
-              You requested to reset your password for your Karnika account. Click the button below to reset your password.
-            </p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${link}" 
-                 style="background-color: #ff6b35; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                Reset Password
-              </a>
-            </div>
-            <p style="color: #666; font-size: 14px;">
-              This link will expire in 1 hour. If you didn't request this, please ignore this email.
-            </p>
-            <p style="color: #666; font-size: 14px;">
-              If the button doesn't work, copy and paste this link into your browser:
-              <br>
-              <a href="${link}" style="color: #ff6b35;">${link}</a>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <div style="background-color: #000000; padding: 32px 24px; border-bottom: 1px solid #e5e7eb;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 500; letter-spacing: 1px;">VYOMTICS</h1>
+        </div>
+        
+        <div style="padding: 40px 24px;">
+          <h2 style="color: #111827; margin: 0 0 8px 0; font-size: 18px; font-weight: 500;">Reset Your Password</h2>
+          <p style="color: #6b7280; margin: 0 0 32px 0; font-size: 14px; line-height: 1.6;">
+            You requested to reset your password for your Vyomtics account. Click the button below to create a new password.
+          </p>
+          
+          <div style="margin: 32px 0;">
+            <a href="${link}" 
+               style="background-color: #000000; color: #ffffff; padding: 14px 32px; text-decoration: none; display: inline-block; font-weight: 500; font-size: 14px;">
+              Reset Password
+            </a>
+          </div>
+          
+          <div style="border-left: 3px solid #e5e7eb; padding-left: 16px; margin: 32px 0;">
+            <p style="color: #6b7280; font-size: 13px; margin: 0 0 8px 0; font-weight: 500;">Important</p>
+            <p style="color: #6b7280; font-size: 13px; margin: 0; line-height: 1.6;">
+              This link will expire in 1 hour. If you didn't request this password reset, please ignore this email.
             </p>
           </div>
-        `,
+          
+          <div style="background-color: #f9fafb; padding: 16px; margin-top: 32px; border: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0 0 8px 0;">
+              If the button doesn't work, copy and paste this link:
+            </p>
+            <p style="word-break: break-all; color: #111827; font-size: 12px; margin: 0;">
+              ${link}
+            </p>
+          </div>
+        </div>
+        
+        <div style="background-color: #f9fafb; padding: 24px; border-top: 1px solid #e5e7eb;">
+          <p style="color: #6b7280; margin: 0; font-size: 13px; text-align: center;">Vyomtics</p>
+        </div>
+      </div>
+    `,
   };
 };

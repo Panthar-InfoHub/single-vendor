@@ -9,7 +9,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  trustedOrigins: ["http://localhost:3000","https://vyomtics.com","https://vyomtics.vercel.app"],
+  trustedOrigins: ["https://vyomtics.com", "https://vyomtics.vercel.app", "http://localhost:3000"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -21,6 +21,7 @@ export const auth = betterAuth({
       } catch (error) {
         console.error(`❌ Failed to send password reset email to ${user.email}:`, error);
         console.log(`\n🔑 PASSWORD RESET URL (copy this link): ${url}\n`);
+        return;
       }
     },
   },

@@ -5,6 +5,7 @@ import {
   deductStockForOrder,
   updateCouponUsage,
 } from "@/utils/order-helpers";
+import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin } from "@/lib/send-mail";
 
 /**
  * Razorpay Webhook Handler
@@ -92,9 +93,9 @@ async function handlePaymentSuccess(paymentEntity: any, orderEntity: any) {
 
   try {
     // Update order in transaction
-    await prisma.$transaction(async (tx) => {
+    const updatedOrder = await prisma.$transaction(async (tx) => {
       // Update order status
-      await tx.order.update({
+      const updated = await tx.order.update({
         where: { id: order.id },
         data: {
           status: "PROCESSING",
@@ -103,7 +104,9 @@ async function handlePaymentSuccess(paymentEntity: any, orderEntity: any) {
           paymentCapturedAt: new Date(),
           paymentMethod: paymentEntity?.method || "RAZORPAY",
           paymentMeta: paymentEntity || {},
-          
+        },
+        include: {
+          items: true,
         },
       });
 
@@ -123,9 +126,16 @@ async function handlePaymentSuccess(paymentEntity: any, orderEntity: any) {
       if (order.couponCode) {
         await updateCouponUsage(order.couponCode, order.userId, tx);
       }
+
+      return updated;
     });
 
     console.log(`Successfully processed payment for order: ${order.orderNumber}`);
+
+    // Send emails asynchronously (don't block the webhook response)
+    sendEmailsInBackground(updatedOrder).catch((error) => {
+      console.error("Failed to send webhook emails:", error);
+    });
   } catch (error: any) {
     console.error(`Error processing payment success webhook:`, error);
     throw error;
@@ -164,7 +174,7 @@ async function handlePaymentFailure(paymentEntity: any, orderEntity: any) {
       data: {
         status: "FAILED",
         paymentStatus: "FAILED",
-        paymentMeta: paymentEntity || {}
+        paymentMeta: paymentEntity || {},
       },
     });
 
@@ -172,5 +182,100 @@ async function handlePaymentFailure(paymentEntity: any, orderEntity: any) {
   } catch (error: any) {
     console.error(`Error processing payment failure webhook:`, error);
     throw error;
+  }
+}
+
+// Helper function to send emails in the background
+async function sendEmailsInBackground(order: any) {
+  try {
+    console.log("📧 [WEBHOOK] Preparing to send emails for order:", order.orderNumber);
+    console.log(
+      "📦 [WEBHOOK] Raw order data:",
+      JSON.stringify(
+        {
+          orderNumber: order.orderNumber,
+          shippingAddress: order.shippingAddress,
+          total: order.total,
+          paymentMethod: order.paymentMethod,
+          itemCount: order.items?.length,
+        },
+        null,
+        2
+      )
+    );
+
+    const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+
+    // Format order details for email
+    const orderDetails = {
+      orderId: order.orderNumber,
+      customerName:
+        [order.shippingAddress?.firstName, order.shippingAddress?.lastName]
+          .filter(Boolean)
+          .join(" ") || "",
+      customerEmail: order.shippingAddress?.email || "",
+      customerPhone: order.shippingAddress?.phone || "",
+      items: order.items.map((item: any) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.variantDetails?.price || 0,
+      })),
+      totalAmount: order.total,
+      shippingAddress: [
+        order.shippingAddress?.firstName && order.shippingAddress?.lastName
+          ? `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`
+          : null,
+        order.shippingAddress?.address,
+        order.shippingAddress?.city,
+        order.shippingAddress?.state,
+        order.shippingAddress?.pinCode,
+        order.shippingAddress?.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      paymentMethod: order.paymentMethod || "RAZORPAY",
+      orderDate: new Date(order.createdAt).toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    };
+
+    // Log formatted order details to identify missing fields
+    console.log(
+      "✉️ [WEBHOOK] Formatted email data:",
+      JSON.stringify(
+        {
+          orderId: orderDetails.orderId,
+          customerName: orderDetails.customerName || "❌ MISSING",
+          customerEmail: orderDetails.customerEmail || "❌ MISSING",
+          customerPhone: orderDetails.customerPhone || "❌ MISSING",
+          shippingAddress: orderDetails.shippingAddress || "❌ MISSING",
+          itemCount: orderDetails.items.length,
+          totalAmount: orderDetails.totalAmount,
+        },
+        null,
+        2
+      )
+    );
+
+    // Send both emails in parallel
+    await Promise.all([
+      // Send to customer
+      sendOrderConfirmationToUser({
+        orderId: orderDetails.orderId,
+        customerName: orderDetails.customerName,
+        customerEmail: orderDetails.customerEmail,
+        items: orderDetails.items,
+        totalAmount: orderDetails.totalAmount,
+        shippingAddress: orderDetails.shippingAddress,
+      }),
+      // Send to all admins
+      ...adminEmails.map((email) => sendOrderNotificationToAdmin(email.trim(), orderDetails)),
+    ]);
+
+    console.log("Webhook emails sent successfully");
+  } catch (error) {
+    // Just log the error, don't fail the webhook
+    console.error("Failed to send webhook emails:", error);
   }
 }

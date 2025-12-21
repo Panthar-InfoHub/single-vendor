@@ -7,6 +7,7 @@ import {
   deductStockForOrder,
   updateCouponUsage,
 } from "@/utils/order-helpers";
+import { sendOrderConfirmationToUser, sendOrderNotificationToAdmin } from "@/lib/send-mail";
 
 export async function confirmOrder({
   orderId,
@@ -95,6 +96,9 @@ export async function confirmOrder({
       return updated;
     });
 
+    // Send emails asynchronously (don't await - fire and forget)
+    sendEmailsInBackground(updatedOrder);
+
     return {
       success: true,
       data: updatedOrder,
@@ -118,5 +122,100 @@ export async function confirmOrder({
     }
 
     throw error;
+  }
+}
+
+// Helper function to send emails in the background
+async function sendEmailsInBackground(order: any) {
+  try {
+    console.log("📧 Preparing to send emails for order:", order.orderNumber);
+    console.log(
+      "📦 Raw order data:",
+      JSON.stringify(
+        {
+          orderNumber: order.orderNumber,
+          shippingAddress: order.shippingAddress,
+          total: order.total,
+          paymentMethod: order.paymentMethod,
+          itemCount: order.items?.length,
+        },
+        null,
+        2
+      )
+    );
+
+    const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+
+    // Format order details for email
+    const orderDetails = {
+      orderId: order.orderNumber,
+      customerName:
+        [order.shippingAddress?.firstName, order.shippingAddress?.lastName]
+          .filter(Boolean)
+          .join(" ") || "",
+      customerEmail: order.shippingAddress?.email || "",
+      customerPhone: order.shippingAddress?.phone || "",
+      items: order.items.map((item: any) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.variantDetails?.price || 0,
+      })),
+      totalAmount: order.total,
+      shippingAddress: [
+        order.shippingAddress?.firstName && order.shippingAddress?.lastName
+          ? `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`
+          : null,
+        order.shippingAddress?.address,
+        order.shippingAddress?.city,
+        order.shippingAddress?.state,
+        order.shippingAddress?.pinCode,
+        order.shippingAddress?.country,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      paymentMethod: order.paymentMethod || "RAZORPAY",
+      orderDate: new Date(order.createdAt).toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    };
+
+    // Log formatted order details to identify missing fields
+    console.log(
+      "✉️ Formatted email data:",
+      JSON.stringify(
+        {
+          orderId: orderDetails.orderId,
+          customerName: orderDetails.customerName || "❌ MISSING",
+          customerEmail: orderDetails.customerEmail || "❌ MISSING",
+          customerPhone: orderDetails.customerPhone || "❌ MISSING",
+          shippingAddress: orderDetails.shippingAddress || "❌ MISSING",
+          itemCount: orderDetails.items.length,
+          totalAmount: orderDetails.totalAmount,
+        },
+        null,
+        2
+      )
+    );
+
+    // Send both emails in parallel
+    await Promise.all([
+      // Send to customer
+      sendOrderConfirmationToUser({
+        orderId: orderDetails.orderId,
+        customerName: orderDetails.customerName,
+        customerEmail: orderDetails.customerEmail,
+        items: orderDetails.items,
+        totalAmount: orderDetails.totalAmount,
+        shippingAddress: orderDetails.shippingAddress,
+      }),
+      // Send to all admins
+      ...adminEmails.map((email) => sendOrderNotificationToAdmin(email.trim(), orderDetails)),
+    ]);
+
+    console.log("Order emails sent successfully");
+  } catch (error) {
+    // Just log the error, don't fail the order
+    console.error("Failed to send order emails:", error);
   }
 }
