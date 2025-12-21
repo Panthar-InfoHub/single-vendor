@@ -164,6 +164,10 @@ export function Footer() {
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>{siteConfig.contact.address}</span>
               </li>
+              <li className="flex items-start gap-2 text-sm text-foreground-muted">
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{siteConfig.contact.secondAddress}</span>
+              </li>
               <li className="flex items-center gap-2 text-sm text-foreground-muted">
                 <Phone className="h-4 w-4 shrink-0" />
                 <a

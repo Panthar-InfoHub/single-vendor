@@ -7,6 +7,7 @@ import { Testimonials } from "@/components/store/home/testimonials";
 import { FAQSection } from "@/components/store/home/faq-section";
 import { Achievements } from "@/components/store/home/achievements";
 import { LabSetup } from "@/components/store/home/lab-setup";
+import { NewsSection } from "@/components/store/home/news-section";
 import { prisma } from "@/prisma/db";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,6 +64,7 @@ export default async function HomePage() {
       <FeaturedProducts title="NEW LAUNCH" filter="new" />
       <Achievements />
       <LabSetup />
+      <NewsSection />
       <TrustBadges />
       <FAQSection faqs={faqs} />
     </>

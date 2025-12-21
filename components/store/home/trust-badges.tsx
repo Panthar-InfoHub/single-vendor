@@ -9,7 +9,7 @@ const features = [
   {
     icon: Truck,
     title: "Free Shipping",
-    description: "On all orders above Rs 499/-",
+    description: "Terms and conditions applied",
   },
   {
     icon: DollarSign,

@@ -52,7 +52,10 @@ export default function ContactPage() {
                     <a href={`tel:${siteConfig.contact.phone}`} className="text-base block">
                       {siteConfig.contact.phone}
                     </a>
-                    <a href={`tel:${siteConfig.contact.alternatePhone}`} className="text-base block">
+                    <a
+                      href={`tel:${siteConfig.contact.alternatePhone}`}
+                      className="text-base block"
+                    >
                       {siteConfig.contact.alternatePhone}
                     </a>
                   </div>
@@ -106,6 +109,30 @@ export default function ContactPage() {
               </div>
               <ContactForm />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-3">
+              Visit Our Location
+            </h2>
+            <p className="text-base text-gray-600">Find us at Dayalbagh, Agra, Uttar Pradesh</p>
+          </div>
+          <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d56779.05528095596!2d77.9820268!3d27.1974484!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397479e17e526b5f%3A0x36962a67a60f081e!2sVyomtics!5e0!3m2!1sen!2sin!4v1766326290122!5m2!1sen!2sin"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full"
+            ></iframe>
           </div>
         </div>
       </section>
