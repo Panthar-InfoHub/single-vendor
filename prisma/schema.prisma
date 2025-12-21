@@ -357,3 +357,31 @@ model SiteConfig {
 
   @@map("site_config")
 }
+
+enum SlideType {
+  IMAGE_ONLY
+  IMAGE_WITH_CONTENT
+}
+
+model HeroSlide {
+  id        String    @id @default(cuid())
+  slideType SlideType @default(IMAGE_WITH_CONTENT)
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+
+  // Image - required for both types
+  image    String
+  imageAlt String @default("")
+
+  // Content - only for IMAGE_WITH_CONTENT
+  title       String?
+  subtitle    String?
+  description String?
+  buttonText  String?
+  buttonLink  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hero_slide")
+}

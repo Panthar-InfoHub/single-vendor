@@ -99,3 +99,56 @@ export async function uploadFilesToCloud({ files }: { files: File[] }) {
 
   return { success, failed };
 }
+
+/**
+ * Upload a single file to ImageKit
+ * @param file - File object to upload
+ * @param folder - Folder path in ImageKit (default: "/uploads")
+ * @returns Object with success status and URL or error
+ */
+export async function uploadToCloud(
+  file: File,
+  folder: string = "/uploads"
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    // Get authentication parameters
+    const authParams = await getAuthParams();
+    const { signature, expire, token, publicKey } = authParams;
+
+    // Upload the file
+    const uploadResponse = await upload({
+      file,
+      fileName: file.name,
+      signature,
+      expire,
+      token,
+      publicKey,
+      folder,
+      useUniqueFileName: true,
+    });
+
+    return {
+      success: true,
+      url: uploadResponse.url,
+    };
+  } catch (error: any) {
+    let errorMessage = "Upload failed";
+
+    if (error instanceof ImageKitAbortError) {
+      errorMessage = "Upload aborted";
+    } else if (error instanceof ImageKitInvalidRequestError) {
+      errorMessage = `Invalid request: ${error.message}`;
+    } else if (error instanceof ImageKitUploadNetworkError) {
+      errorMessage = `Network error: ${error.message}`;
+    } else if (error instanceof ImageKitServerError) {
+      errorMessage = `Server error: ${error.message}`;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}

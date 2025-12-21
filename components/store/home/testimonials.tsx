@@ -1,7 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { useState } from "react";
+import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import type { CarouselApi } from "@/components/ui/carousel";
 
 const testimonials = [
   {
@@ -63,40 +72,25 @@ const testimonials = [
     role: "Agra",
   },
 ];
+
 export function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    const updateItemsPerPage = () => {
-      if (window.innerWidth >= 1024) setItemsPerPage(3);
-      else if (window.innerWidth >= 768) setItemsPerPage(2);
-      else setItemsPerPage(1);
-    };
+  useState(() => {
+    if (!api) return;
 
-    updateItemsPerPage();
-    window.addEventListener("resize", updateItemsPerPage);
-    return () => window.removeEventListener("resize", updateItemsPerPage);
-  }, []);
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
 
-  const totalPages = Math.ceil(testimonials.length / itemsPerPage);
-  const currentTestimonials = testimonials.slice(
-    currentIndex * itemsPerPage,
-    (currentIndex + 1) * itemsPerPage
-  );
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalPages);
-  };
-
-  const goToPrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
-  };
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  });
 
   return (
     <section className="py-12 md:py-16 relative overflow-hidden">
-    
-
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="mb-10 text-center">
@@ -112,71 +106,73 @@ export function Testimonials() {
         </div>
 
         {/* Testimonials Carousel */}
-        <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentTestimonials.map((testimonial) => (
-              <div
-                key={testimonial.id}
-                className="relative bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group border border-gray-100 hover:border-cyan-200"
-              >
-                {/* Quote Icon */}
-                <div className="absolute -top-3 left-6 w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center shadow-lg">
-                  <Quote className="w-5 h-5 text-white" fill="white" />
-                </div>
+        <div className="relative px-0 md:px-12 pt-6">
+          <Carousel
+            setApi={setApi}
+            opts={{
+              align: "start",
+              loop: true,
+              dragFree: true,
+              duration: 40,
+            }}
+            plugins={[
+              Autoplay({
+                delay: 4000,
+                stopOnInteraction: false,
+                stopOnMouseEnter: true,
+                playOnInit: true,
+              }),
+            ]}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-3 md:-ml-6 py-1">
+              {testimonials.map((testimonial) => (
+                <CarouselItem
+                  key={testimonial.id}
+                  className="pl-3 md:pl-6 basis-full md:basis-1/2 lg:basis-1/3 pt-4"
+                >
+                  <div className="relative bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group border-2 border-gray-300 hover:border-cyan-400 h-full">
+                    {/* Quote Icon */}
+                    <div className="absolute -top-3 left-6 w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center shadow-lg z-10">
+                      <Quote className="w-5 h-5 text-white" fill="white" />
+                    </div>
 
-                <div className="pt-4">
-                  <p className="text-gray-700 mb-6 leading-relaxed text-sm line-clamp-6">
-                    {testimonial.content}
-                  </p>
+                    <div className="pt-4">
+                      <p className="text-gray-700 mb-6 leading-relaxed text-sm line-clamp-6">
+                        {testimonial.content}
+                      </p>
 
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="font-semibold text-gray-900 text-sm">{testimonial.author}</p>
-                    {testimonial.role && (
-                      <p className="text-xs text-cyan-600 mt-1">{testimonial.role}</p>
-                    )}
+                      <div className="pt-4 border-t border-gray-100">
+                        <p className="font-semibold text-gray-900 text-sm">{testimonial.author}</p>
+                        {testimonial.role && (
+                          <p className="text-xs text-cyan-600 mt-1">{testimonial.role}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
 
-          {/* Navigation Buttons */}
-          {totalPages > 1 && (
-            <>
-              <button
-                onClick={goToPrev}
-                className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white hover:bg-cyan-50 p-3 rounded-full shadow-lg border border-gray-200 hover:border-cyan-400 transition-all z-10 hidden md:block"
-                aria-label="Previous testimonials"
-              >
-                <ChevronLeft className="h-5 w-5 text-cyan-600" />
-              </button>
+            {/* Navigation Buttons */}
+            <CarouselPrevious className="hidden md:flex -left-12 bg-white hover:bg-cyan-50 border-2 border-gray-200 hover:border-cyan-400" />
+            <CarouselNext className="hidden md:flex -right-12 bg-white hover:bg-cyan-50 border-2 border-gray-200 hover:border-cyan-400" />
+          </Carousel>
 
-              <button
-                onClick={goToNext}
-                className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white hover:bg-cyan-50 p-3 rounded-full shadow-lg border border-gray-200 hover:border-cyan-400 transition-all z-10 hidden md:block"
-                aria-label="Next testimonials"
-              >
-                <ChevronRight className="h-5 w-5 text-cyan-600" />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Pagination Dots */}
-        {totalPages > 1 && (
+          {/* Pagination Dots */}
           <div className="flex justify-center gap-2 mt-8">
-            {Array.from({ length: totalPages }).map((_, index) => (
+            {Array.from({ length: count }).map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentIndex(index)}
+                onClick={() => api?.scrollTo(index)}
                 className={`h-2 rounded-full transition-all ${
-                  index === currentIndex ? "w-8 bg-cyan-600" : "w-2 bg-gray-300 hover:bg-cyan-400"
+                  index === current ? "w-8 bg-cyan-600" : "w-2 bg-gray-300 hover:bg-cyan-400"
                 }`}
-                aria-label={`Go to page ${index + 1}`}
+                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

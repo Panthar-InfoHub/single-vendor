@@ -13,6 +13,7 @@ import {
   Tag,
   FileText,
   HelpCircle,
+  ImageIcon,
 } from "lucide-react";
 import { siteConfig } from "@/site.config";
 import {
@@ -31,6 +32,7 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Hero Slides", href: "/admin/hero-slides", icon: ImageIcon },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Categories", href: "/admin/categories", icon: FolderTree },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },

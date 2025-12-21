@@ -8,6 +8,8 @@ import { FAQSection } from "@/components/store/home/faq-section";
 import { Achievements } from "@/components/store/home/achievements";
 import { LabSetup } from "@/components/store/home/lab-setup";
 import { prisma } from "@/prisma/db";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = generatePageMetadata({
   path: "/",
@@ -15,6 +17,16 @@ export const metadata = generatePageMetadata({
 
 // Home page can be statically generated and revalidated
 export const revalidate = 3600; // Revalidate every hour
+
+// Separate component for hero slides
+async function HeroSection() {
+  const heroSlides = await prisma.heroSlide.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+  });
+
+  return <HeroCarousel slides={heroSlides} />;
+}
 
 export default async function HomePage() {
   // Fetch published FAQs
@@ -34,7 +46,17 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroCarousel />
+      <Suspense
+        fallback={
+          <div className="relative w-full overflow-hidden bg-gradient-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
+            <div className="relative h-[450px] md:h-[550px] lg:h-[650px] flex items-center justify-center">
+              <Skeleton className="h-full w-full" />
+            </div>
+          </div>
+        }
+      >
+        <HeroSection />
+      </Suspense>
       <ShopCategoryCards />
       <FeaturedProducts title="SHOP OUR BESTSELLERS" filter="bestseller" />
       <Testimonials />

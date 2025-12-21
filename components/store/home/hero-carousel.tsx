@@ -4,70 +4,27 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import type { HeroSlide } from "@/prisma/generated/prisma";
 
-interface Slide {
-  id: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  image: string;
-  cta: {
-    text: string;
-    href: string;
-  };
+interface HeroCarouselProps {
+  slides: HeroSlide[];
 }
 
-const slides: Slide[] = [
-  {
-    id: 1,
-    title: "Power Your Projects",
-    subtitle: "with Raspberry Pi",
-    description:
-      "Experience next-level performance. Shop the latest boards, complete kits, and essential accessories.",
-    image: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=1200",
-    cta: {
-      text: "Shop Now",
-      href: "/categories/development-boards",
-    },
-  },
-  {
-    id: 2,
-    title: "Build Amazing Robots",
-    subtitle: "STEM Kits for All Ages",
-    description:
-      "Comprehensive robotics kits with everything you need to start learning and building.",
-    image: "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=1200",
-    cta: {
-      text: "Explore Kits",
-      href: "/categories/robotics-kits",
-    },
-  },
-  {
-    id: 3,
-    title: "3D Printing Excellence",
-    subtitle: "Professional Grade Printers",
-    description:
-      "High-speed, high-quality 3D printers and accessories for makers and professionals.",
-    image:
-      "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    cta: {
-      text: "View Printers",
-      href: "/categories/3d-printing",
-    },
-  },
-];
-
-export function HeroCarousel() {
+export function HeroCarousel({ slides }: HeroCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
+  const activeSlides = slides.filter((slide) => slide.isActive);
+
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, []);
+    if (activeSlides.length === 0) return;
+    setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
+  }, [activeSlides.length]);
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    if (activeSlides.length === 0) return;
+    setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
   const goToSlide = (index: number) => {
@@ -76,19 +33,44 @@ export function HeroCarousel() {
   };
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || activeSlides.length === 0) return;
 
     const interval = setInterval(() => {
       nextSlide();
-    }, 5000);
+    }, 7000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, nextSlide]);
+  }, [isAutoPlaying, nextSlide, activeSlides.length]);
+
+  // Empty state - no slides
+  if (activeSlides.length === 0) {
+    return (
+      <div className="relative w-full overflow-hidden bg-linear-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
+        <div className="relative h-[450px] md:h-[550px] lg:h-[650px]">
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center space-y-4 px-4">
+              <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto">
+                <ImageOff className="h-10 w-10 text-gray-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No Hero Slides Available
+                </h3>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  Hero carousel is currently empty. Check back soon for featured content!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full overflow-hidden bg-linear-to-b from-blue-50 via-white to-gray-50 border-b border-blue-100">
-      <div className="relative h-[450px] md:h-[550px] lg:h-[650px]">
-        {slides.map((slide, index) => (
+      <div className="relative h-[280px] sm:h-[380px] md:h-[480px] lg:h-[550px]">
+        {activeSlides.map((slide, index) => (
           <div
             key={slide.id}
             className={`absolute inset-0 transition-opacity duration-700 ${
@@ -96,81 +78,154 @@ export function HeroCarousel() {
             }`}
           >
             <div className="h-full">
-              <div className="container mx-auto px-6 h-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full py-12">
-                  {/* Content */}
-                  <div className="space-y-8 text-center lg:text-left">
-                    <div className="space-y-3">
-                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight">
-                        {slide.title}
-                      </h2>
-                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-600">
-                        {slide.subtitle}
-                      </h3>
-                    </div>
-
-                    <p className="text-base md:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                      {slide.description}
-                    </p>
-
-                    <div>
-                      <Button
-                        asChild
-                        size="lg"
-                        className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                      >
-                        <Link href={slide.cta.href}>{slide.cta.text}</Link>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Image */}
-                  <div className="relative h-64 lg:h-96">
+              {slide.slideType === "IMAGE_ONLY" ? (
+                // Full-width image slide with proper aspect ratio
+                <div className="relative w-full h-full">
+                  <Image
+                    src={slide.image}
+                    alt={slide.imageAlt || "Hero banner"}
+                    fill
+                    className="object-cover object-center"
+                    sizes="100vw"
+                    priority={index === 0}
+                  />
+                </div>
+              ) : (
+                // Image with content slide - responsive layout
+                <>
+                  {/* Mobile: Background image with content overlay */}
+                  <div className="lg:hidden relative w-full h-full">
                     <Image
                       src={slide.image}
-                      alt={slide.title}
+                      alt={slide.imageAlt || "Hero banner"}
                       fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover object-center"
+                      sizes="100vw"
                       priority={index === 0}
                     />
+                    {/* Gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/50 to-transparent" />
+
+                    {/* Content on top */}
+                    <div className="relative z-10 h-full flex flex-col justify-end px-6 pb-16">
+                      <div className="space-y-3 text-center">
+                        {slide.title && (
+                          <h2 className="text-3xl sm:text-4xl font-bold text-white leading-tight capitalize drop-shadow-lg">
+                            {slide.title}
+                          </h2>
+                        )}
+                        {slide.subtitle && (
+                          <h3 className="text-xl sm:text-2xl font-medium text-white/90 capitalize drop-shadow-md">
+                            {slide.subtitle}
+                          </h3>
+                        )}
+                        {slide.buttonText && slide.buttonLink && (
+                          <div className="pt-4">
+                            <Button
+                              asChild
+                              size="lg"
+                              className="bg-white text-gray-900 hover:bg-gray-100 px-8 h-12 text-base font-semibold shadow-xl"
+                            >
+                              <Link href={slide.buttonLink}>{slide.buttonText}</Link>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+
+                  {/* Desktop: Side by side layout */}
+                  <div className="hidden lg:block container mx-auto px-6 h-full">
+                    <div className="grid grid-cols-2 gap-12 items-center h-full py-12">
+                      {/* Content */}
+                      <div className="space-y-8 text-left">
+                        <div className="space-y-3">
+                          {slide.title && (
+                            <h2 className="text-5xl font-semibold text-gray-900 leading-tight capitalize">
+                              {slide.title}
+                            </h2>
+                          )}
+                          {slide.subtitle && (
+                            <h3 className="text-3xl font-medium text-gray-600 capitalize">
+                              {slide.subtitle}
+                            </h3>
+                          )}
+                        </div>
+
+                        {slide.description && (
+                          <p className="text-lg text-gray-600 leading-relaxed">
+                            {slide.description}
+                          </p>
+                        )}
+
+                        {slide.buttonText && slide.buttonLink && (
+                          <div>
+                            <Button
+                              asChild
+                              size="lg"
+                              className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                              <Link href={slide.buttonLink}>{slide.buttonText}</Link>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative w-full h-[450px]">
+                        <Image
+                          src={slide.image}
+                          alt={slide.imageAlt || slide.title || "Hero image"}
+                          fill
+                          className="object-contain"
+                          sizes="50vw"
+                          priority={index === 0}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-cyan-50 p-2.5 rounded-full border border-gray-200 hover:border-cyan-400 transition-all shadow-md"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="h-5 w-5 text-gray-700" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white hover:bg-cyan-50 p-2.5 rounded-full border border-gray-200 hover:border-cyan-400 transition-all shadow-md"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="h-5 w-5 text-gray-700" />
-        </button>
-
-        {/* Dots Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {slides.map((_, index) => (
+        {/* Navigation Arrows - Only show if more than 1 slide */}
+        {activeSlides.length > 1 && (
+          <>
             <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`h-1.5 rounded-full transition-all ${
-                index === currentSlide ? "w-8 bg-cyan-600" : "w-1.5 bg-gray-300 hover:bg-cyan-400"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+              onClick={prevSlide}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-cyan-50 p-1.5 sm:p-2.5 rounded-full border border-gray-200 hover:border-cyan-400 transition-all shadow-md backdrop-blur-sm"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+            </button>
+
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-cyan-50 p-1.5 sm:p-2.5 rounded-full border border-gray-200 hover:border-cyan-400 transition-all shadow-md backdrop-blur-sm"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+            </button>
+
+            {/* Dots Indicator */}
+            <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              {activeSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === currentSlide
+                      ? "w-6 sm:w-8 bg-cyan-600"
+                      : "w-1.5 bg-gray-300 hover:bg-cyan-400"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

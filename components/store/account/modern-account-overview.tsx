@@ -71,7 +71,7 @@ export function ModernAccountOverview() {
     <div className="space-y-6">
       {/* Welcome Card */}
       <div className="relative overflow-hidden bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-sm">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/5 to-purple-100/20 rounded-full blur-3xl -z-10" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-br from-primary/5 to-purple-100/20 rounded-full blur-3xl -z-10" />
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex-1">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-900">

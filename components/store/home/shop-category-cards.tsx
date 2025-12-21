@@ -93,7 +93,7 @@ export async function ShopCategoryCards() {
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 md:auto-rows-[220px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:auto-rows-[220px]">
           {categories.slice(0, 5).map((category, index) => {
             const minPrice = category.products[0]?.sellingPrice;
             const hasImage = category.image && category.image.trim() !== "";
@@ -104,7 +104,7 @@ export async function ShopCategoryCards() {
             const isRightStack = index === 1 || index === 2;
             const isBottomRow = index === 3 || index === 4;
 
-            let gridClasses = "col-span-1 row-span-1"; // Default for mobile/tablet
+            let gridClasses = "col-span-1 row-span-1"; // Default for mobile - small cards
 
             // Desktop Layout:
             // Item 0: Big Square (Left) -> 2x2
@@ -112,11 +112,12 @@ export async function ShopCategoryCards() {
             // Item 3 & 4: Wide Rectangles (Bottom) -> 2x1 each, side by side
 
             if (isLargeSquare) {
-              gridClasses = "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2";
+              // First item: 2 columns on mobile, 2x2 on desktop
+              gridClasses = "col-span-2 row-span-1 lg:col-span-2 lg:row-span-2";
             } else if (isRightStack) {
-              gridClasses = "col-span-2 row-span-1 lg:col-span-2 lg:row-span-1";
+              gridClasses = "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1";
             } else if (isBottomRow) {
-              gridClasses = "col-span-2 row-span-1 lg:col-span-2 lg:row-span-1";
+              gridClasses = "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1";
             }
 
             return (
@@ -128,7 +129,7 @@ export async function ShopCategoryCards() {
                 <div
                   className={`relative w-full h-full ${
                     // Aspect ratios - Mobile only
-                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-2/1lg:aspect-auto"
+                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-square lg:aspect-auto"
                   }`}
                 >
                   {hasImage ? (

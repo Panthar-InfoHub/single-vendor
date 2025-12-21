@@ -38,29 +38,29 @@ export async function CategoryGrid() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
           {categories.map((category) => {
             const minPrice = category.products[0]?.sellingPrice;
 
             return (
               <Link key={category.id} href={`/categories/${category.slug}`} className="group">
-                <div className="bg-gray-50 rounded-2xl p-6 hover:bg-blue-50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                  <div className="relative aspect-square mb-4 rounded-xl overflow-hidden bg-white">
+                <div className="bg-gray-50 rounded-2xl p-3 sm:p-4 md:p-6 hover:bg-blue-50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <div className="relative aspect-square mb-2 sm:mb-3 md:mb-4 rounded-xl overflow-hidden bg-white">
                     <Image
                       src={category.image || "/images/placeholder.png"}
                       alt={category.name}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      sizes="(max-width: 768px) 50vw, 20vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     />
                   </div>
 
-                  <h3 className="font-semibold text-gray-900 text-center mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 text-center text-xs sm:text-sm md:text-base mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors">
                     {category.name}
                   </h3>
 
                   {minPrice && (
-                    <p className="text-sm text-gray-500 text-center">
+                    <p className="text-xs sm:text-sm text-gray-500 text-center">
                       from {formatPrice(minPrice)}*
                     </p>
                   )}
