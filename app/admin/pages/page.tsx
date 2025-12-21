@@ -1,6 +1,8 @@
 import { getAllCMSPages } from "@/actions/admin/cms.actions";
 import { CMSPagesTable } from "@/components/admin/pages/cms-pages-table";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "CMS Pages | Admin",
   description: "Manage your website content pages",

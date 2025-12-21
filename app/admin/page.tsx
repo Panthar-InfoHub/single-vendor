@@ -8,6 +8,8 @@ import {
 import { DashboardClient } from "@/components/admin/dashboard/dashboard-client";
 import { AdminDashboardSkeleton } from "@/components/ui/loading-skeleton";
 
+export const dynamic = 'force-dynamic';
+
 // Revalidate dashboard data every 5 minutes
 export const revalidate = 300;
 
