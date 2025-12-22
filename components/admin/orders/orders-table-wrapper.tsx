@@ -12,43 +12,38 @@ interface OrdersTableWrapperProps {
 }
 
 export async function OrdersTableWrapper({ filters }: OrdersTableWrapperProps) {
-  const result = await getOrders();
-  const allOrders = result.success ? result.data : [];
-
-  // Apply filters
-  let filteredOrders = allOrders || [];
-
-  // Search filter
-  if (filters.search) {
-    const searchLower = filters.search.toLowerCase();
-    filteredOrders = filteredOrders.filter(
-      (order) =>
-        order.orderNumber?.toLowerCase().includes(searchLower) ||
-        order.user?.name?.toLowerCase().includes(searchLower) ||
-        order.user?.email?.toLowerCase().includes(searchLower)
-    );
-  }
-
-  // Status filter
-  if (filters.status && filters.status !== "all") {
-    filteredOrders = filteredOrders.filter((order) => order.status === filters.status);
-  }
-
-  // Payment status filter
-  if (filters.payment && filters.payment !== "all") {
-    filteredOrders = filteredOrders.filter((order) => order.paymentStatus === filters.payment);
-  }
-
-  // Pagination
   const page = parseInt(filters.page || "1");
   const pageSize = 10;
-  const totalPages = Math.ceil(filteredOrders.length / pageSize);
-  const paginatedOrders = filteredOrders.slice((page - 1) * pageSize, page * pageSize);
+
+  // Parse filters and call getOrders with database pagination
+  const result = await getOrders({
+    status: filters.status && filters.status !== "all" ? (filters.status as any) : undefined,
+    search: filters.search,
+    page,
+    pageSize,
+  });
+
+  if (!result.success) {
+    return <div className="text-center py-8 text-destructive">Failed to load orders</div>;
+  }
+
+  const orders = result.data || [];
+  const pagination = result.pagination || { currentPage: 1, totalPages: 1, totalCount: 0 };
+
+  // Apply payment status filter (client-side for now, or move to server)
+  let filteredOrders = orders;
+  if (filters.payment && filters.payment !== "all") {
+    filteredOrders = orders.filter((order) => order.paymentStatus === filters.payment);
+  }
 
   return (
     <div className="space-y-4">
-      <OrdersTableFilters totalOrders={filteredOrders.length} />
-      <OrdersTable orders={paginatedOrders} currentPage={page} totalPages={totalPages} />
+      <OrdersTableFilters totalOrders={pagination.totalCount} />
+      <OrdersTable
+        orders={filteredOrders}
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+      />
     </div>
   );
 }

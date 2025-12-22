@@ -36,7 +36,7 @@ interface CartStore {
   isLoading: boolean;
   isInitialized: boolean;
   shippingConfig: ShippingConfig | null;
-  loadingProductIds: Set<string>;
+  loadingProducts: Set<string>;
   fetchCart: () => Promise<void>;
   fetchShippingConfig: () => Promise<void>;
   addItem: (productId: string, name: string, quantity?: number) => Promise<void>;
@@ -57,7 +57,7 @@ export const useCart = create<CartStore>((set, get) => ({
   isLoading: false,
   isInitialized: false,
   shippingConfig: null,
-  loadingProductIds: new Set<string>(),
+  loadingProducts: new Set<string>(),
 
   fetchShippingConfig: async () => {
     try {
@@ -95,35 +95,45 @@ export const useCart = create<CartStore>((set, get) => ({
   },
 
   addItem: async (productId: string, name: string, quantity: number = 1) => {
-    // Add product to loading set
-    set({ loadingProductIds: new Set([...get().loadingProductIds, productId]) });
+    const existingItem = get().items.find((item) => item.productId === productId);
+    const previousItems = get().items;
 
-    const optimisticItem = get().items.find((item) => item.productId === productId);
+    // Set loading state for this product
+    set({ loadingProducts: new Set([...get().loadingProducts, productId]) });
 
-    if (optimisticItem) {
-      // Optimistic update
+    // Optimistic update - immediately update UI
+    if (existingItem) {
+      // Item already in cart - update quantity
       set({
         items: get().items.map((item) =>
           item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item
         ),
       });
+    } else {
+      // New item - create optimistic item with minimal required data
+      const optimisticNewItem: CartItem = {
+        id: `temp-${Date.now()}`,
+        productId,
+        name,
+        slug: "",
+        image: "",
+        price: 0,
+        quantity,
+        inStock: true,
+        stockQuantity: 999,
+      };
+      set({ items: [...get().items, optimisticNewItem] });
     }
 
     try {
       const result = await addToCartAction(productId, quantity);
       if (result.success) {
-        // Refresh cart to get actual data
+        // Fetch updated cart from server to get real data
         await get().fetchCart();
         toast.success(`${name} added to cart`, { duration: 1000 });
       } else {
-        // Revert optimistic update
-        if (optimisticItem) {
-          set({
-            items: get().items.map((item) =>
-              item.productId === productId ? optimisticItem : item
-            ),
-          });
-        }
+        // Revert optimistic update on failure
+        set({ items: previousItems });
 
         // Check if login is required
         if ((result as any).requiresLogin) {
@@ -134,14 +144,14 @@ export const useCart = create<CartStore>((set, get) => ({
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
+      // Revert on error
+      set({ items: previousItems });
       toast.error("Failed to add item to cart");
-      // Refresh to sync
-      await get().fetchCart();
     } finally {
-      // Remove product from loading set
-      const newLoadingIds = new Set(get().loadingProductIds);
-      newLoadingIds.delete(productId);
-      set({ loadingProductIds: newLoadingIds });
+      // Remove loading state
+      const newLoadingProducts = new Set(get().loadingProducts);
+      newLoadingProducts.delete(productId);
+      set({ loadingProducts: newLoadingProducts });
     }
   },
 
@@ -248,11 +258,11 @@ export const useCart = create<CartStore>((set, get) => ({
   },
 
   isProductLoading: (productId: string) => {
-    return get().loadingProductIds.has(productId);
+    return get().loadingProducts.has(productId);
   },
 
   clearState: () => {
-    set({ items: [], isInitialized: false, isLoading: false, loadingProductIds: new Set() });
+    set({ items: [], isInitialized: false, isLoading: false, loadingProducts: new Set() });
   },
 }));
 

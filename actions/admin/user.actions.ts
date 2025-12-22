@@ -5,10 +5,19 @@ import { revalidatePath } from "next/cache";
 import { USER_ROLE } from "@/prisma/generated/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 
-// Get all users with filtering
-export async function getUsers(filters?: { role?: USER_ROLE; search?: string }) {
+// Get all users with filtering and pagination
+export async function getUsers(filters?: {
+  role?: USER_ROLE;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   await requireAdmin();
   try {
+    const page = filters?.page || 1;
+    const pageSize = filters?.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
     const where: any = {};
 
     if (filters?.role) {
@@ -22,6 +31,10 @@ export async function getUsers(filters?: { role?: USER_ROLE; search?: string }) 
       ];
     }
 
+    // Get total count
+    const totalCount = await prisma.user.count({ where });
+
+    // Fetch paginated users
     const users = await prisma.user.findMany({
       where,
       select: {
@@ -42,6 +55,8 @@ export async function getUsers(filters?: { role?: USER_ROLE; search?: string }) 
         },
       },
       orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
     });
 
     // Calculate total spent for each user
@@ -55,7 +70,18 @@ export async function getUsers(filters?: { role?: USER_ROLE; search?: string }) 
       totalSpent: user.orders.reduce((sum, order) => sum + order.total, 0),
     }));
 
-    return { success: true, data: usersWithStats };
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      success: true,
+      data: usersWithStats,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalCount,
+        totalPages,
+      },
+    };
   } catch (error) {
     console.error("Error fetching users:", error);
     return { success: false, error: "Failed to fetch users" };

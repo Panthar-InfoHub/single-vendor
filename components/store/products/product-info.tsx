@@ -39,10 +39,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { addItem, isProductLoading: isCartLoading } = useCart();
+  const { addItem, isProductLoading, isInCart } = useCart();
   const { isInWishlist, toggleItem, isProductLoading: isWishlistLoading } = useWishlist();
   const inWishlist = isInWishlist(product.id);
-  const isAddingToCart = isCartLoading(product.id);
+  const inCart = isInCart(product.id);
+  const isAddingToCart = isProductLoading(product.id);
   const isTogglingWishlist = isWishlistLoading(product.id);
 
   const discount = Math.round(((product.mrp - product.sellingPrice) / product.mrp) * 100);
@@ -62,7 +63,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
     }
 
     try {
-      await addItem(product.id, product.title, quantity);
+      if (inCart) {
+        // Remove from cart if already in cart
+        const cartItem = useCart.getState().items.find((item) => item.productId === product.id);
+        if (cartItem) {
+          await useCart.getState().removeItem(cartItem.id);
+        }
+      } else {
+        // Add to cart
+        await addItem(product.id, product.title, quantity);
+      }
     } catch (error) {
       // Error toast is handled in the hook
     }
@@ -214,19 +224,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
             </div>
 
             <Button
-              className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white min-h-14 sm:min-h-12 h-14 sm:h-12 px-6 py-3 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+              className={`flex-1 min-h-14 sm:min-h-12 h-14 sm:h-12 px-6 py-3 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50 ${
+                inCart ? "" : "bg-cyan-600 hover:bg-cyan-700 text-white"
+              }`}
               onClick={handleAddToCart}
               disabled={isAddingToCart}
+              variant={inCart ? "outline" : "default"}
             >
               {isAddingToCart ? (
-                <>
-                  <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 mr-2 animate-spin" />
-                  Adding...
-                </>
+                <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 animate-spin" />
               ) : (
                 <>
                   <ShoppingCart className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
-                  Add to Cart
+                  {inCart ? "Remove from Cart" : "Add to Cart"}
                 </>
               )}
             </Button>

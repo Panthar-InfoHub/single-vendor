@@ -5,15 +5,21 @@ import { revalidatePath } from "next/cache";
 import { OrderStatus, PaymentStatus } from "@/prisma/generated/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 
-// Get all orders with filtering
+// Get all orders with filtering and pagination
 export async function getOrders(filters?: {
   status?: OrderStatus;
   userId?: string;
   search?: string;
   startDate?: Date;
   endDate?: Date;
+  page?: number;
+  pageSize?: number;
 }) {
   try {
+    const page = filters?.page || 1;
+    const pageSize = filters?.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
     const where: any = {};
 
     if (filters?.status) {
@@ -42,6 +48,10 @@ export async function getOrders(filters?: {
       }
     }
 
+    // Get total count for pagination
+    const totalCount = await prisma.order.count({ where });
+
+    // Fetch paginated orders
     const orders = await prisma.order.findMany({
       where,
       include: {
@@ -66,9 +76,22 @@ export async function getOrders(filters?: {
         },
       },
       orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
     });
 
-    return { success: true, data: orders };
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      success: true,
+      data: orders,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalCount,
+        totalPages,
+      },
+    };
   } catch (error) {
     console.error("Error fetching orders:", error);
     return { success: false, error: "Failed to fetch orders" };

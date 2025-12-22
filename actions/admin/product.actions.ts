@@ -6,15 +6,21 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-auth";
 
-// Get all products with filtering (including ratings for admin)
+// Get all products with filtering and pagination
 export async function getProducts(filters?: {
   categoryId?: string;
   search?: string;
   isActive?: boolean;
   isFeatured?: boolean;
   isBestSeller?: boolean;
+  page?: number;
+  pageSize?: number;
 }) {
   try {
+    const page = filters?.page || 1;
+    const pageSize = filters?.pageSize || 10;
+    const skip = (page - 1) * pageSize;
+
     const where: any = {};
 
     if (filters?.categoryId) {
@@ -40,15 +46,32 @@ export async function getProducts(filters?: {
       where.isBestSeller = filters.isBestSeller;
     }
 
+    // Get total count
+    const totalCount = await prisma.product.count({ where });
+
+    // Fetch paginated products
     const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
       },
       orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
     });
 
-    return { success: true, data: products };
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      success: true,
+      data: products,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalCount,
+        totalPages,
+      },
+    };
   } catch (error) {
     console.error("Error fetching products:", error);
     return { success: false, error: "Failed to fetch products" };

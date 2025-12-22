@@ -154,7 +154,7 @@ export function OrdersTable({ orders, currentPage, totalPages }: OrdersTableProp
               <TableHead>Total</TableHead>
               <TableHead>Order Status</TableHead>
               <TableHead>Payment Status</TableHead>
-              <TableHead className="w-[80px]">Actions</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

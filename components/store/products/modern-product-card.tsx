@@ -27,9 +27,10 @@ interface ModernProductCardProps {
 }
 
 export function ModernProductCard({ product }: ModernProductCardProps) {
-  const { addItem, isProductLoading } = useCart();
+  const { addItem, isProductLoading, isInCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const isAddingToCart = isProductLoading(product.id);
+  const inCart = isInCart(product.id);
 
   const discount = Math.round(((product.mrp - product.sellingPrice) / product.mrp) * 100);
   const isOutOfStock = product.stock === 0;
@@ -45,7 +46,16 @@ export function ModernProductCard({ product }: ModernProductCardProps) {
     }
 
     try {
-      await addItem(product.id, product.title, 1);
+      if (inCart) {
+        // Remove from cart if already in cart
+        const cartItem = useCart.getState().items.find((item) => item.productId === product.id);
+        if (cartItem) {
+          await useCart.getState().removeItem(cartItem.id);
+        }
+      } else {
+        // Add to cart
+        await addItem(product.id, product.title, 1);
+      }
     } catch (error) {
       // Error toast is handled in the hook
     }
@@ -128,16 +138,18 @@ export function ModernProductCard({ product }: ModernProductCardProps) {
             <Button
               onClick={handleAddToCart}
               disabled={isOutOfStock || isAddingToCart}
-              className="w-full h-10 text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition-all duration-300 disabled:opacity-50 shadow-md hover:shadow-lg"
+              className={`w-full h-10 text-sm font-semibold transition-all duration-300 disabled:opacity-50 shadow-md hover:shadow-lg ${
+                inCart ? "" : "bg-cyan-600 hover:bg-cyan-700 text-white"
+              }`}
               size="sm"
+              variant={inCart ? "outline" : "default"}
             >
               {isAddingToCart ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Adding...
-                </>
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : isOutOfStock ? (
                 "Out of Stock"
+              ) : inCart ? (
+                "Remove from Cart"
               ) : (
                 "Add to Cart"
               )}

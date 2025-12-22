@@ -11,37 +11,31 @@ interface UsersTableWrapperProps {
 }
 
 export async function UsersTableWrapper({ filters }: UsersTableWrapperProps) {
-  const result = await getUsers();
-  const allUsers = result.success ? result.data : [];
-
-  // Apply filters
-  let filteredUsers = allUsers || [];
-
-  // Role filter
-  if (filters.role && filters.role !== "all") {
-    filteredUsers = filteredUsers.filter((user) => user.role === filters.role);
-  }
-
-  // Search filter
-  if (filters.search) {
-    const searchLower = filters.search.toLowerCase();
-    filteredUsers = filteredUsers.filter(
-      (user) =>
-        user.name?.toLowerCase().includes(searchLower) ||
-        user.email?.toLowerCase().includes(searchLower)
-    );
-  }
-
-  // Pagination
   const page = parseInt(filters.page || "1");
   const pageSize = 10;
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
-  const paginatedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+
+  const result = await getUsers({
+    role: filters.role && filters.role !== "all" ? (filters.role as any) : undefined,
+    search: filters.search,
+    page,
+    pageSize,
+  });
+
+  if (!result.success) {
+    return <div className="text-center py-8 text-destructive">Failed to load users</div>;
+  }
+
+  const users = result.data || [];
+  const pagination = result.pagination || { currentPage: 1, totalPages: 1, totalCount: 0 };
 
   return (
     <div className="space-y-4">
-      <UsersTableFilters totalUsers={filteredUsers.length} />
-      <UsersTable users={paginatedUsers} currentPage={page} totalPages={totalPages} />
+      <UsersTableFilters totalUsers={pagination.totalCount} />
+      <UsersTable
+        users={users}
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+      />
     </div>
   );
 }
