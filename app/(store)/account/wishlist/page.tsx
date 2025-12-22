@@ -34,7 +34,7 @@ export default function WishlistPage() {
 
   if (isPending || isLoading) {
     return (
-      <div className="space-y-4 px-4 py-6">
+      <div className="space-y-4 p-4 sm:p-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -74,18 +74,23 @@ export default function WishlistPage() {
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-border p-6">
+      <div className="bg-white rounded-lg border border-border p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-3">My Wishlist</h2>
-            <p className="text-muted-foreground mt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-3">My Wishlist</h2>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               {items.length} {items.length === 1 ? "item" : "items"} saved for later
             </p>
           </div>
 
           {items.length > 0 && (
-            <Button variant="outline" onClick={handleClearWishlist} disabled={isClearing}>
+            <Button
+              variant="outline"
+              onClick={handleClearWishlist}
+              disabled={isClearing}
+              className="shrink-0"
+            >
               {isClearing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

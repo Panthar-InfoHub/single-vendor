@@ -369,15 +369,15 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
   return (
     <>
       <form onSubmit={handleSubmit}>
-        <div className="grid lg:grid-cols-[1fr_480px] gap-8">
+        <div className="grid lg:grid-cols-[1fr_480px] gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Delivery Form */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             {/* Saved Addresses Section */}
             {savedAddresses.length > 0 && (
-              <Card className="p-6 space-y-2">
+              <Card className="p-4 sm:p-6 space-y-2">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Select Delivery Address</h2>
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+                  <h2 className="text-lg sm:text-xl font-semibold">Select Delivery Address</h2>
                 </div>
 
                 <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
@@ -385,50 +385,59 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
                     {savedAddresses.map((address) => (
                       <div
                         key={address.id}
-                        className={`flex items-start space-x-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                        className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
                           selectedAddressId === address.id
                             ? "border-primary bg-primary/5"
                             : "hover:border-primary/50"
                         }`}
                         onClick={() => handleAddressSelect(address.id)}
                       >
-                        <RadioGroupItem value={address.id} id={address.id} />
-                        <Label htmlFor={address.id} className="flex-1 cursor-pointer space-y-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">
+                        <RadioGroupItem
+                          value={address.id}
+                          id={address.id}
+                          className="mt-0.5 shrink-0"
+                        />
+                        <Label
+                          htmlFor={address.id}
+                          className="flex-1 cursor-pointer space-y-1 min-w-0"
+                        >
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-sm sm:text-base break-words">
                               {address.firstName} {address.lastName}
                             </p>
                             {address.isDefault && (
-                              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0">
                                 Default
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground break-words">
                             {address.address}
                             {address.apartment && `, ${address.apartment}`}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {address.city}, {address.state} {address.pinCode}
                           </p>
-                          <p className="text-sm text-muted-foreground">{address.phone}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            {address.phone}
+                          </p>
                         </Label>
                       </div>
                     ))}
 
                     {/* Use New Address Option */}
                     <div
-                      className={`flex items-start space-x-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                      className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
                         selectedAddressId === "new"
                           ? "border-primary bg-primary/5"
                           : "hover:border-primary/50"
                       }`}
                       onClick={() => handleAddressSelect("new")}
                     >
-                      <RadioGroupItem value="new" id="new" />
+                      <RadioGroupItem value="new" id="new" className="mt-0.5 shrink-0" />
                       <Label htmlFor="new" className="flex-1 cursor-pointer">
-                        <p className="font-medium">Use a new address</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-sm sm:text-base">Use a new address</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Enter a new delivery address below
                         </p>
                       </Label>
@@ -439,20 +448,20 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
             )}
 
             {/* Delivery Form */}
-            <Card className="p-6 space-y-2">
-              <h2 className="text-xl font-semibold">
+            <Card className="p-4 sm:p-6 space-y-2 min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold">
                 {selectedAddressId === "new" || savedAddresses.length === 0
                   ? "Delivery Address"
                   : "Edit Delivery Details"}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {selectedAddressId !== "new" && savedAddresses.length > 0
                   ? "You can edit the selected address details below"
                   : "Enter your delivery information"}
               </p>
 
               {/* Name */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name *</Label>
                   <Input
@@ -476,7 +485,7 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
               </div>
 
               {/* Phone and Email */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
                   <PhoneInput
@@ -533,7 +542,7 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
               </div>
 
               {/* City, State, PIN */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
                   <Input
@@ -566,12 +575,12 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
           </div>
 
           {/* Right Column - Order Summary */}
-          <div className="lg:sticky lg:top-8 h-full space-y-6">
+          <div className="lg:sticky lg:top-8 h-fit space-y-4 sm:space-y-6 min-w-0">
             <Card className="p-4 sm:p-6 space-y-2">
               {/* Cart Items */}
-              <div className="space-y-2 max-h-[300px] sm:max-h-none overflow-y-auto">
+              <div className="space-y-2 max-h-[250px] sm:max-h-[300px] lg:max-h-none overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-2 sm:gap-4">
+                  <div key={item.id} className="flex gap-3 sm:gap-4">
                     <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg border overflow-hidden bg-muted shrink-0">
                       <Image
                         src={item.image || "/placeholder.svg"}

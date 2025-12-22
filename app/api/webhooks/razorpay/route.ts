@@ -21,11 +21,18 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-razorpay-signature");
 
     if (!signature) {
+      console.error("❌ SECURITY: Missing webhook signature");
       return NextResponse.json({ error: "Missing webhook signature" }, { status: 400 });
     }
 
     // Verify webhook signature
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error("❌ CRITICAL: RAZORPAY_WEBHOOK_SECRET not configured");
+      return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+    }
+
     const isValid = verifyWebhookSignature(body, signature, webhookSecret);
 
     if (!isValid) {
@@ -90,6 +97,45 @@ async function handlePaymentSuccess(paymentEntity: any, orderEntity: any) {
     console.log(`Order ${order.orderNumber} already marked as successful`);
     return;
   }
+
+  // SECURITY: Verify payment amount matches order total
+  const paidAmount = paymentEntity?.amount ? paymentEntity.amount / 100 : 0;
+  if (paidAmount > 0 && Math.abs(paidAmount - order.total) > 0.01) {
+    console.error(
+      `❌ SECURITY: Amount mismatch in webhook. Expected: ${order.total}, Got: ${paidAmount}`
+    );
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: "FAILED",
+        paymentStatus: "FAILED",
+        paymentMeta: {
+          error: `Amount mismatch - expected ${order.total}, got ${paidAmount}`,
+          webhookPayload: paymentEntity,
+        },
+      },
+    });
+    return;
+  }
+
+  // SECURITY: Verify payment status is captured
+  if (paymentEntity?.status && paymentEntity.status !== "captured") {
+    console.error(`❌ SECURITY: Payment not captured in webhook. Status: ${paymentEntity.status}`);
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: "FAILED",
+        paymentStatus: "FAILED",
+        paymentMeta: {
+          error: `Payment not captured - status: ${paymentEntity.status}`,
+          webhookPayload: paymentEntity,
+        },
+      },
+    });
+    return;
+  }
+
+  console.log(`✅ Webhook payment verified: ${razorpayPaymentId} - Amount: ₹${paidAmount}`);
 
   try {
     // Update order in transaction

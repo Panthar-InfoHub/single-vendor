@@ -102,14 +102,16 @@ export function ModernOrdersList() {
   return (
     <div className="space-y-4">
       {orders.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-8 sm:p-12">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-              <Package className="h-8 w-8 text-gray-400" />
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-100 mb-3 sm:mb-4">
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">No orders yet</h3>
-            <p className="text-gray-500 mb-6">Start shopping to see your orders here</p>
-            <Button asChild size="lg" className="rounded-full px-8">
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No orders yet</h3>
+            <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">
+              Start shopping to see your orders here
+            </p>
+            <Button asChild size="default" className="rounded-full px-6 sm:px-8">
               <Link href="/products">Browse Products</Link>
             </Button>
           </div>
@@ -122,45 +124,55 @@ export function ModernOrdersList() {
           return (
             <div
               key={order.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
+              className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"
             >
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Header */}
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-semibold">Order #{order.orderNumber}</h3>
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <h3 className="text-base sm:text-lg font-semibold">
+                        Order #{order.orderNumber}
+                      </h3>
                       <Badge
-                        className={`${statusConfig.color} border rounded-full px-3 py-1 flex items-center gap-1.5`}
+                        className={`${statusConfig.color} border rounded-full px-2 sm:px-3 py-0.5 sm:py-1 flex items-center gap-1 sm:gap-1.5`}
                       >
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        {statusConfig.label}
+                        <StatusIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <span className="text-xs">{statusConfig.label}</span>
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-500">Placed on {formatDate(order.createdAt)}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                      Placed on {formatDate(order.createdAt)}
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500 mb-1">Order Total</p>
-                    <p className="text-2xl font-bold text-primary">{formatPrice(order.total)}</p>
+                  <div className="text-left sm:text-right">
+                    <p className="text-xs sm:text-sm text-gray-500 mb-1">Order Total</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
+                      {formatPrice(order.total)}
+                    </p>
                   </div>
                 </div>
 
                 {/* Tracking Info */}
                 {order.trackingId && (
-                  <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <Truck className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <p className="text-sm font-medium text-blue-900">Tracking ID</p>
-                          <p className="text-sm text-blue-700 font-mono">{order.trackingId}</p>
+                  <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                    <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-4 flex-col sm:flex-row">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-medium text-blue-900">
+                            Tracking ID
+                          </p>
+                          <p className="text-xs sm:text-sm text-blue-700 font-mono break-all">
+                            {order.trackingId}
+                          </p>
                         </div>
                       </div>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => copyTrackingId(order.trackingId)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 self-end sm:self-auto shrink-0"
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -169,36 +181,36 @@ export function ModernOrdersList() {
                 )}
 
                 {/* Items Preview */}
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                   {order.items.slice(0, 2).map((item: any) => {
                     const itemImage = item.product?.images?.[0] || "/placeholder.svg";
                     const itemName = item.name || item.product?.title || "Product";
                     const variantPrice = item.variantDetails?.price || 0;
 
                     return (
-                      <div key={item.id} className="flex gap-4 items-center">
-                        <div className="relative w-16 h-16 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0">
+                      <div key={item.id} className="flex gap-3 sm:gap-4 items-center">
+                        <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-gray-50 rounded-lg overflow-hidden shrink-0">
                           <Image
                             src={itemImage}
                             alt={itemName}
                             fill
-                            className="object-contain p-2"
+                            className="object-contain p-1 sm:p-2"
                             loading="lazy"
-                            sizes="64px"
+                            sizes="(max-width: 640px) 48px, 64px"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{itemName}</p>
-                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          <p className="font-medium text-xs sm:text-sm truncate">{itemName}</p>
+                          <p className="text-xs sm:text-sm text-gray-500">Qty: {item.quantity}</p>
                         </div>
-                        <p className="font-semibold text-sm">
+                        <p className="font-semibold text-xs sm:text-sm shrink-0">
                           {formatPrice(variantPrice * item.quantity)}
                         </p>
                       </div>
                     );
                   })}
                   {order.items.length > 2 && (
-                    <p className="text-sm text-gray-500 pl-20">
+                    <p className="text-xs sm:text-sm text-gray-500 pl-14 sm:pl-20">
                       +{order.items.length - 2} more item(s)
                     </p>
                   )}
@@ -294,7 +306,7 @@ export function ModernOrdersList() {
                           key={item.id}
                           className="flex gap-4 p-4 bg-gray-50 rounded-lg items-center"
                         >
-                          <div className="relative w-20 h-20 bg-white rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="relative w-20 h-20 bg-white rounded-lg overflow-hidden shrink-0">
                             <Image
                               src={itemImage}
                               alt={itemName}

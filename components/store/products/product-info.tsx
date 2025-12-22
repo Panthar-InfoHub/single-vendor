@@ -189,42 +189,43 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="space-y-4 pt-2">
         {!isOutOfStock ? (
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center border border-gray-200 rounded-lg bg-white w-full sm:w-auto h-12">
+            <div className="flex items-center border border-gray-200 rounded-lg bg-white w-fit h-14 sm:h-12">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleQuantityChange(-1)}
                 disabled={quantity <= 1}
-                className="h-full w-10 rounded-l-lg hover:bg-gray-50"
+                className="h-full w-14 sm:w-12 rounded-l-lg hover:bg-gray-50"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <Minus className="h-5 w-5 sm:h-4 sm:w-4" />
               </Button>
-              <span className="w-10 text-center font-bold text-base">{quantity}</span>
+              <span className="w-14 sm:w-12 text-center font-bold text-lg sm:text-base">
+                {quantity}
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleQuantityChange(1)}
                 disabled={quantity >= product.stock}
-                className="h-full w-10 rounded-r-lg hover:bg-gray-50"
+                className="h-full w-14 sm:w-12 rounded-r-lg hover:bg-gray-50"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
               </Button>
             </div>
 
             <Button
-              size="lg"
-              className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white h-12 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+              className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white min-h-14 sm:min-h-12 h-14 sm:h-12 px-6 py-3 rounded-lg text-base font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
               onClick={handleAddToCart}
               disabled={isAddingToCart}
             >
               {isAddingToCart ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 mr-2 animate-spin" />
                   Adding...
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  <ShoppingCart className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                   Add to Cart
                 </>
               )}
@@ -240,7 +241,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="flex-1 h-10 rounded-lg border hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-gray-700 text-sm disabled:opacity-50"
+            className="flex-1 h-12 rounded-lg border hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-gray-700 text-sm disabled:opacity-50"
             onClick={handleWishlistToggle}
             disabled={isTogglingWishlist}
           >
@@ -254,7 +255,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
           <Button
             variant="outline"
-            className="flex-1 h-10 rounded-lg border hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-gray-700 text-sm"
+            className="flex-1 h-12 rounded-lg border hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-gray-700 text-sm"
             onClick={() => setShareDialogOpen(true)}
           >
             <Share2 className="h-4 w-4 mr-2" />

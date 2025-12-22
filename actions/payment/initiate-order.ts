@@ -34,9 +34,17 @@ export async function initiateOrder(orderDetails: OrderDetails) {
       throw new Error(`Insufficient stock for ${product.title}. Available: ${product.stock}`);
     }
 
-    // Verify price matches
+    // SECURITY: Verify price matches server-side price (prevent price manipulation)
     if (product.sellingPrice !== item.price) {
-      throw new Error(`Price mismatch for ${product.title}`);
+      console.error(
+        `❌ SECURITY: Price mismatch for ${product.title}. Expected: ${product.sellingPrice}, Got: ${item.price}`
+      );
+      throw new Error(`Price has changed for ${product.title}. Please refresh and try again.`);
+    }
+
+    // SECURITY: Verify quantity is positive and reasonable
+    if (item.quantity <= 0 || item.quantity > 100) {
+      throw new Error(`Invalid quantity for ${product.title}`);
     }
 
     subtotal += product.sellingPrice * item.quantity;

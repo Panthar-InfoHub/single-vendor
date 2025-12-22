@@ -75,13 +75,13 @@ export function AccountNav() {
       {/* Mobile Menu Button */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="lg:hidden">
+          <Button variant="outline" size="icon" className="lg:hidden mb-4">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[280px] p-4 bg-background">
+        <SheetContent side="left" className="w-[280px] p-6 bg-background">
           <div className="flex flex-col pt-6">
-            <h2 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-3">
+            <h2 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-4">
               Navigation
             </h2>
             <nav className="space-y-1">

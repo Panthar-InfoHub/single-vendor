@@ -21,7 +21,7 @@ export async function confirmOrder({
   razorpay_signature: string;
 }) {
   try {
-    // Step 1: Verify signature
+    // Step 1: Verify signature (CRITICAL SECURITY CHECK)
     const isValid = verifyRazorpaySignature(
       razorpay_order_id,
       razorpay_payment_id,
@@ -29,16 +29,17 @@ export async function confirmOrder({
     );
 
     if (!isValid) {
+      console.error(`❌ SECURITY: Invalid payment signature for order ${orderId}`);
       // Mark order as failed
       await prisma.order.update({
         where: { id: orderId },
         data: {
           status: "FAILED",
           paymentStatus: "FAILED",
-          paymentMeta: { error: "Invalid payment signature" },
+          paymentMeta: { error: "Invalid payment signature - possible fraud attempt" },
         },
       });
-      throw new Error("Payment verification failed");
+      throw new Error("Payment verification failed - invalid signature");
     }
 
     // Step 2: Find the order
@@ -48,11 +49,29 @@ export async function confirmOrder({
     });
 
     if (!order) {
+      console.error(`❌ Order not found: ${orderId}`);
       throw new Error("Order not found");
     }
 
-    // Step 3: Check if order is already processed
+    // Step 3: Verify the Razorpay order ID matches (SECURITY CHECK)
+    if (order.razorpayOrderId !== razorpay_order_id) {
+      console.error(
+        `❌ SECURITY: Razorpay order ID mismatch. Expected: ${order.razorpayOrderId}, Got: ${razorpay_order_id}`
+      );
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status: "FAILED",
+          paymentStatus: "FAILED",
+          paymentMeta: { error: "Order ID mismatch - possible fraud attempt" },
+        },
+      });
+      throw new Error("Order verification failed - ID mismatch");
+    }
+
+    // Step 4: Check if order is already processed (prevent double processing)
     if (order.paymentStatus === "SUCCESS") {
+      console.log(`⚠️ Order ${order.orderNumber} already processed successfully`);
       return {
         success: true,
         data: order,
@@ -70,7 +89,6 @@ export async function confirmOrder({
           paymentStatus: "SUCCESS",
           razorpayPaymentId: razorpay_payment_id,
           paymentCapturedAt: new Date(),
-
           paymentMethod: "RAZORPAY",
         },
         include: {
