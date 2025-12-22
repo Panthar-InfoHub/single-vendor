@@ -104,6 +104,9 @@ model Category {
   updatedAt   DateTime   @updatedAt
   products    Product[]
 
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([parentId])
   @@map("category")
 }
 
@@ -133,7 +136,15 @@ model Product {
   orderItems       OrderItem[]
   wishlistItems    WishlistItem[]
   reviews          Review[]
+  cartItems        CartItem[]
 
+  @@index([isActive])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isFeatured])
+  @@index([isBestSeller])
+  @@index([isActive, isFeatured])
+  @@index([isActive, categoryId])
   @@map("product")
 }
 
@@ -204,6 +215,13 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([paymentStatus])
+  @@index([status, createdAt])
+  @@index([userId, status])
+  @@index([razorpayOrderId])
   @@map("order")
 }
 
@@ -251,6 +269,8 @@ model Cart {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
+  @@index([userId])
+  @@index([sessionId])
   @@map("cart")
 }
 
@@ -259,12 +279,15 @@ model CartItem {
   cartId    String
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   weight    String // variant identifier
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([cartId, productId, weight])
+  @@index([cartId])
+  @@index([productId])
   @@map("cart_item")
 }
 
@@ -277,6 +300,8 @@ model WishlistItem {
   createdAt DateTime @default(now())
 
   @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
   @@map("wishlist_item")
 }
 

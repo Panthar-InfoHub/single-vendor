@@ -27,7 +27,7 @@ async function getCartId() {
   return cart.id;
 }
 
-// Get cart with full product details and signed URLs
+// Get cart with full product details - OPTIMIZED
 export async function getCart() {
   try {
     const cartId = await getCartId();
@@ -37,12 +37,13 @@ export async function getCart() {
       return { success: true, data: { items: [] }, requiresLogin: true };
     }
 
+    // Single optimized query with join
     const cart = await prisma.cart.findUnique({
       where: { id: cartId },
       include: {
         items: {
           include: {
-            cart: false,
+            product: true,
           },
         },
       },
@@ -52,39 +53,21 @@ export async function getCart() {
       return { success: true, data: { items: [] } };
     }
 
-    // Fetch product details for all cart items
-    const productIds = cart.items.map((item) => item.productId);
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, isActive: true },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        images: true,
-        sellingPrice: true,
-        stock: true,
-      },
-    });
-
-    // Map cart items with full product details
+    // Map cart items with full product details - filter inactive products
     const enrichedItems = cart.items
-      .map((item) => {
-        const product = products.find((p) => p.id === item.productId);
-        if (!product) return null;
-
-        return {
-          id: item.id,
-          productId: product.id,
-          name: product.title,
-          slug: product.slug,
-          image: product.images[0] || "/images/placeholder.png",
-          price: product.sellingPrice,
-          quantity: item.quantity,
-          inStock: product.stock > 0,
-          stockQuantity: product.stock,
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+      .filter((item) => item.product.isActive)
+      .map((item) => ({
+        id: item.id,
+        productId: item.product.id,
+        name: item.product.title,
+        slug: item.product.slug,
+        image: item.product.images[0] || "/images/placeholder.png",
+        price: item.product.sellingPrice,
+        quantity: item.quantity,
+        weight: item.weight,
+        inStock: item.product.stock > 0,
+        stockQuantity: item.product.stock,
+      }));
 
     return { success: true, data: { items: enrichedItems } };
   } catch (error) {
@@ -93,8 +76,12 @@ export async function getCart() {
   }
 }
 
-// Add item to cart
-export async function addToCart(productId: string, quantity: number = 1) {
+// Add item to cart - OPTIMIZED with upsert
+export async function addToCart(
+  productId: string,
+  quantity: number = 1,
+  weight: string = "default"
+) {
   try {
     const cartId = await getCartId();
 
@@ -103,34 +90,25 @@ export async function addToCart(productId: string, quantity: number = 1) {
       return { success: false, error: "Please login to add items to cart", requiresLogin: true };
     }
 
-    // Check if item already exists
-    const existingItem = await prisma.cartItem.findUnique({
+    // Use upsert for better performance - single query instead of find + create/update
+    await prisma.cartItem.upsert({
       where: {
         cartId_productId_weight: {
           cartId,
           productId,
-          weight: "default",
+          weight,
         },
       },
+      update: {
+        quantity: { increment: quantity },
+      },
+      create: {
+        cartId,
+        productId,
+        weight,
+        quantity,
+      },
     });
-
-    if (existingItem) {
-      // Update quantity
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity },
-      });
-    } else {
-      // Create new item
-      await prisma.cartItem.create({
-        data: {
-          cartId,
-          productId,
-          weight: "default",
-          quantity,
-        },
-      });
-    }
 
     revalidatePath("/");
     return { success: true, message: "Item added to cart" };

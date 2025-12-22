@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
-// Get user's wishlist
+// Get user's wishlist - OPTIMIZED
 export async function getWishlist() {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -14,8 +14,14 @@ export async function getWishlist() {
       return { success: true, data: { items: [] } };
     }
 
+    // Single optimized query with proper select
     const wishlistItems = await prisma.wishlistItem.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        product: {
+          isActive: true, // Only fetch active products
+        },
+      },
       select: {
         id: true,
         productId: true,
@@ -30,6 +36,7 @@ export async function getWishlist() {
             mrp: true,
             stock: true,
             shortDescription: true,
+            isActive: true,
             category: {
               select: {
                 id: true,
@@ -43,14 +50,7 @@ export async function getWishlist() {
       orderBy: { createdAt: "desc" },
     });
 
-    const enrichedItems = wishlistItems.map((item) => ({
-      id: item.id,
-      productId: item.productId,
-      product: item.product,
-      createdAt: item.createdAt,
-    }));
-
-    return { success: true, data: { items: enrichedItems } };
+    return { success: true, data: { items: wishlistItems } };
   } catch (error) {
     console.error("Error fetching wishlist:", error);
     return { success: false, error: "Failed to fetch wishlist" };
