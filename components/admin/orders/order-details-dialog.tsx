@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/utils/format";
-import { Package, MapPin, CreditCard, User } from "lucide-react";
+import { Package, MapPin, CreditCard, User, Copy, Check } from "lucide-react";
 import { getOrder } from "@/actions/admin/order.actions";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { OrderStatus } from "@/prisma/generated/prisma";
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface OrderDetailsDialogProps {
   orderId: string | null;
@@ -47,9 +49,12 @@ interface OrderDetails {
     quantity: number;
     image: string | null;
     variantDetails: any;
+    orderId: string;
+    productId: string;
+    createdAt: Date;
     product: {
       id: string;
-      name: string;
+      title: string;
       images: string[];
       slug: string;
     };
@@ -76,6 +81,18 @@ const getStatusColor = (status: OrderStatus) => {
 export function OrderDetailsDialog({ orderId, open, onOpenChange }: OrderDetailsDialogProps) {
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(text);
+      toast.success(`${label} copied to clipboard`);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      toast.error("Failed to copy");
+    }
+  };
 
   useEffect(() => {
     if (orderId && open) {
@@ -92,10 +109,29 @@ export function OrderDetailsDialog({ orderId, open, onOpenChange }: OrderDetails
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Order Details - {order?.orderNumber || ""}</DialogTitle>
+    <Dialog open={open} onOpenChange={onOpenChange} modal>
+      <DialogContent className="max-w-7xl! w-[95vw] max-h-[90vh]! p-0 gap-0 flex! flex-col! overflow-hidden sm:max-w-7xl!">
+        <DialogHeader className="shrink-0 border-b pb-4 px-6 pt-6">
+          <div className="flex items-center justify-between gap-4">
+            <DialogTitle className="text-xl">Order Details</DialogTitle>
+            {order && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground font-mono">{order.orderNumber}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => copyToClipboard(order.orderNumber, "Order ID")}
+                >
+                  {copiedId === order.orderNumber ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         </DialogHeader>
 
         {loading ? (
@@ -103,170 +139,216 @@ export function OrderDetailsDialog({ orderId, open, onOpenChange }: OrderDetails
             <LoadingSpinner />
           </div>
         ) : order ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Order Date</p>
-                <p className="font-medium">{formatDate(order.createdAt)}</p>
+          <div className="overflow-y-scroll flex-1 px-6">
+            <div className="space-y-5 py-6">
+              {/* Top Row: Status, Date, Customer - 3 Columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-1">Order Date</p>
+                  <p className="font-medium text-sm">{formatDate(order.createdAt)}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <Badge variant="secondary" className={getStatusColor(order.status)}>
+                    {order.status.toLowerCase()}
+                  </Badge>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-1">Customer</p>
+                  <p className="font-medium text-sm">{order.user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{order.user.email}</p>
+                </div>
               </div>
-              <Badge variant="secondary" className={getStatusColor(order.status)}>
-                {order.status.toLowerCase()}
-              </Badge>
-            </div>
 
-            <Separator />
-
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <User className="h-4 w-4" />
-                <h3 className="font-semibold">Customer</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="font-medium">{order.user.name}</p>
-                <p className="text-sm text-muted-foreground">{order.user.email}</p>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Package className="h-4 w-4" />
-                <h3 className="font-semibold">Order Items</h3>
-              </div>
-              <div className="space-y-3">
-                {order.items.map((item) => {
-                  const variantDetails = item.variantDetails as { price?: number };
-                  const itemTotal = (variantDetails?.price || 0) * item.quantity;
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
-                    >
-                      {item.image && (
-                        <div className="relative w-12 h-12 rounded overflow-hidden shrink-0">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            sizes="48px"
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                      </div>
-                      <p className="font-medium">{formatCurrency(itemTotal)}</p>
+              {/* Order Summary - Prominent at Top */}
+              <div className="p-4 rounded-lg bg-linear-to-br from-primary/5 to-primary/10 border border-primary/20">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Order Summary
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Subtotal</p>
+                    <p className="font-semibold">{formatCurrency(order.subtotal)}</p>
+                  </div>
+                  {order.discount > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Discount {order.couponCode && `(${order.couponCode})`}
+                      </p>
+                      <p className="font-semibold text-green-600">
+                        -{formatCurrency(order.discount)}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="h-4 w-4" />
-                <h3 className="font-semibold">Shipping Address</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="font-medium">
-                  {order.shippingAddress.firstName} {order.shippingAddress.lastName}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {order.shippingAddress.address}
-                  {order.shippingAddress.apartment && `, ${order.shippingAddress.apartment}`}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
-                  {order.shippingAddress.pinCode}
-                </p>
-                <p className="text-sm text-muted-foreground">{order.shippingAddress.country}</p>
-                {order.shippingAddress.phone && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Phone: {order.shippingAddress.phone}
-                  </p>
-                )}
-                {order.shippingAddress.email && (
-                  <p className="text-sm text-muted-foreground">
-                    Email: {order.shippingAddress.email}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <CreditCard className="h-4 w-4" />
-                <h3 className="font-semibold">Payment Information</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Payment Method</p>
-                  <p className="font-medium capitalize">{order.paymentMethod || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Payment Status</p>
-                  <p className="capitalize font-medium">{order.paymentStatus.toLowerCase()}</p>
-                </div>
-                {order.razorpayOrderId && (
+                  )}
                   <div>
-                    <p className="text-sm text-muted-foreground">Razorpay Order ID</p>
-                    <p className="font-mono text-xs">{order.razorpayOrderId}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Shipping</p>
+                    <p className="font-semibold">
+                      {order.shippingFee === 0 ? "FREE" : formatCurrency(order.shippingFee)}
+                    </p>
                   </div>
-                )}
-                {order.razorpayPaymentId && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Razorpay Payment ID</p>
-                    <p className="font-mono text-xs">{order.razorpayPaymentId}</p>
+                  <div className="md:col-span-1 col-span-2 p-3 bg-background rounded-md">
+                    <p className="text-xs text-muted-foreground mb-1">Total Amount</p>
+                    <p className="font-bold text-xl">{formatCurrency(order.total)}</p>
                   </div>
-                )}
-                {order.paymentCapturedAt && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Payment Captured At</p>
-                    <p className="text-sm">{formatDate(order.paymentCapturedAt)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatCurrency(order.subtotal)}</span>
-              </div>
-              {order.discount > 0 && (
-                <div className="flex items-center justify-between text-sm text-green-600">
-                  <span>Discount {order.couponCode && `(${order.couponCode})`}</span>
-                  <span>-{formatCurrency(order.discount)}</span>
                 </div>
-              )}
-              {order.taxAmount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>{formatCurrency(order.taxAmount)}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span>{order.shippingFee === 0 ? "FREE" : formatCurrency(order.shippingFee)}</span>
               </div>
-              <Separator />
-              <div className="flex items-center justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>{formatCurrency(order.total)}</span>
+
+              {/* Shipping Address & Payment Info - 2 Columns */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Shipping Address */}
+                <div className="p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="h-4 w-4" />
+                    <h3 className="font-semibold">Shipping Address</h3>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.shippingAddress.address}
+                      {order.shippingAddress.apartment && `, ${order.shippingAddress.apartment}`}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+                      {order.shippingAddress.pinCode}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{order.shippingAddress.country}</p>
+                    {order.shippingAddress.phone && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        📞 {order.shippingAddress.phone}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="h-4 w-4" />
+                    <h3 className="font-semibold">Payment Details</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Method</p>
+                        <p className="text-sm font-medium capitalize">
+                          {order.paymentMethod || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Status</p>
+                        <Badge variant="secondary" className="text-xs">
+                          {order.paymentStatus.toLowerCase()}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {order.razorpayOrderId && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Razorpay Order ID</p>
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-background px-2 py-1 rounded flex-1 truncate">
+                            {order.razorpayOrderId}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 shrink-0"
+                            onClick={() =>
+                              copyToClipboard(order.razorpayOrderId!, "Razorpay Order ID")
+                            }
+                          >
+                            {copiedId === order.razorpayOrderId ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.razorpayPaymentId && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Razorpay Payment ID</p>
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-background px-2 py-1 rounded flex-1 truncate">
+                            {order.razorpayPaymentId}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 shrink-0"
+                            onClick={() =>
+                              copyToClipboard(order.razorpayPaymentId!, "Razorpay Payment ID")
+                            }
+                          >
+                            {copiedId === order.razorpayPaymentId ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.paymentCapturedAt && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Captured At</p>
+                        <p className="text-sm">{formatDate(order.paymentCapturedAt)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Package className="h-4 w-4" />
+                  <h3 className="font-semibold">Order Items ({order.items.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {order.items.map((item) => {
+                    const variantDetails = item.variantDetails as { price?: number };
+                    const itemTotal = (variantDetails?.price || 0) * item.quantity;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+                      >
+                        {item.image && (
+                          <div className="relative w-16 h-16 rounded overflow-hidden shrink-0">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm line-clamp-2">{item.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Qty: {item.quantity} × {formatCurrency(variantDetails?.price || 0)}
+                          </p>
+                        </div>
+                        <p className="font-semibold text-sm whitespace-nowrap">
+                          {formatCurrency(itemTotal)}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">Order not found</div>
+          <div className="text-center py-8 px-6 text-muted-foreground">Order not found</div>
         )}
       </DialogContent>
     </Dialog>
