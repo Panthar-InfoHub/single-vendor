@@ -7,7 +7,7 @@ import { siteConfig } from "@/site.config";
 
 export function Footer() {
   return (
-    <footer className="bg-surface border-t border-border">
+    <footer className="bg-cyan-600 text-white border-t border-border">
       <div className=" container py-10 mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About */}
@@ -18,7 +18,7 @@ export function Footer() {
                   src={siteConfig.logo.path}
                   alt={siteConfig.logo.alt}
                   fill
-                  className="object-contain"
+                  className="object-contain "
                 />
               </div>
               {/* <h3 className="text-lg font-semibold text-primary">{siteConfig.name}</h3> */}
@@ -30,7 +30,7 @@ export function Footer() {
                   href={siteConfig.social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
                 >
                   <Facebook className="h-4 w-4" />
                 </Link>
@@ -40,7 +40,7 @@ export function Footer() {
                   href={siteConfig.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
                 >
                   <Instagram className="h-4 w-4" />
                 </Link>
@@ -50,7 +50,7 @@ export function Footer() {
                   href={siteConfig.social.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
                 >
                   <Twitter className="h-4 w-4" />
                 </Link>
@@ -60,7 +60,7 @@ export function Footer() {
                   href={siteConfig.social.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
                 >
                   <Youtube className="h-4 w-4" />
                 </Link>
@@ -70,11 +70,19 @@ export function Footer() {
                   href={siteConfig.social.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
                 >
                   <Linkedin className="h-4 w-4" />
                 </Link>
               )}
+                <Link
+                  href={"https://maps.app.goo.gl/mz7YMZErej9u4CXS6?g_st=ic"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center hover:text-primary hover:bg-white transition-colors"
+                >
+                  <MapPin className="h-4 w-4" />
+                </Link>
             </div>
           </div>
 
@@ -85,7 +93,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/account"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm "
                 >
                   My Account
                 </Link>
@@ -93,7 +101,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm "
                 >
                   About Us
                 </Link>
@@ -101,7 +109,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm "
                 >
                   Contact Us
                 </Link>
@@ -109,7 +117,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/products"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm "
                 >
                   All Products
                 </Link>
@@ -124,7 +132,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/shipping"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm"
                 >
                   Shipping Policy
                 </Link>
@@ -132,7 +140,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/returns"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm"
                 >
                   Returns & Refunds
                 </Link>
@@ -140,7 +148,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/terms-and-conditions"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm"
                 >
                   Terms & Conditions
                 </Link>
@@ -148,7 +156,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/privacy-policy"
-                  className="text-sm text-foreground-muted hover:text-primary transition-colors"
+                  className="text-sm"
                 >
                   Privacy Policy
                 </Link>
@@ -172,13 +180,13 @@ export function Footer() {
                 <Phone className="h-4 w-4 shrink-0" />
                 <a
                   href={`tel:${siteConfig.contact.phone}`}
-                  className="hover:text-primary transition-colors"
+                  className=""
                 >
                   {siteConfig.contact.phone}
                 </a>,
                 <a
                   href={`tel:${siteConfig.contact.alternatePhone}`}
-                  className="hover:text-primary transition-colors"
+                  className=""
                 >
                   {siteConfig.contact.alternatePhone}
                 </a>
@@ -187,7 +195,7 @@ export function Footer() {
                 <Mail className="h-4 w-4 shrink-0" />
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
-                  className="hover:text-primary transition-colors"
+                  className=""
                 >
                   {siteConfig.contact.email}
                 </a>

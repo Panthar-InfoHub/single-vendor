@@ -11,6 +11,9 @@ import { NewsSection } from "@/components/store/home/news-section";
 import { prisma } from "@/prisma/db";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { siteConfig } from "@/site.config";
+import Image from "next/image";
 
 export const metadata = generatePageMetadata({
   path: "/",
@@ -67,6 +70,16 @@ export default async function HomePage() {
       <NewsSection />
       <TrustBadges />
       <FAQSection faqs={faqs} />
+      {/* fixed bottom floating whatsapp button */}
+      <Link
+        href={`https://wa.me/${siteConfig.contact.whatsapp}`}
+        className="bg-green-500 hover:bg-green-600 transition-colors fixed bottom-6 right-6 z-50 rounded-lg w-24  flex justify-center items-center p-2 shadow-lg gap-1"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Image src="/whatsapp.svg" alt="WhatsApp" width={24} height={24} className=" " />
+        <span className="text-white font-medium text-sm">Chat</span>
+      </Link>
     </>
   );
 }
