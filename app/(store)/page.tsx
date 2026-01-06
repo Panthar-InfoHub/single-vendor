@@ -19,9 +19,6 @@ export const metadata = generatePageMetadata({
   path: "/",
 });
 
-// Home page can be statically generated and revalidated
-export const revalidate = 3600; // Revalidate every hour
-
 // Separate component for hero slides
 async function HeroSection() {
   const heroSlides = await prisma.heroSlide.findMany({
