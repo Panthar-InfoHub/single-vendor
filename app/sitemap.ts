@@ -34,30 +34,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Get all products
-  const productsResult = await getFilteredProducts({ limit: 1000 });
-  const products = productsResult.success && productsResult.data ? productsResult.data : [];
+  
 
-  const productRoutes = products.map((product: any) => ({
-    url: `${baseUrl}/products/${product.slug}`,
-    lastModified: new Date(product.updatedAt),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+  
 
-  // Get all categories
-  const categoriesResult = await getCategories();
-  const categories =
-    categoriesResult.success && categoriesResult.data
-      ? categoriesResult.data.filter((cat) => cat.isActive)
-      : [];
-
-  const categoryRoutes = categories.map((category) => ({
-    url: `${baseUrl}/categories/${category.slug}`,
-    lastModified: new Date(category.updatedAt),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  return [...staticRoutes, ...productRoutes, ...categoryRoutes];
+  return [...staticRoutes];
 }
