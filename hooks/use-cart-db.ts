@@ -44,6 +44,8 @@ interface CartStore {
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   clearState: () => void;
+  setShippingConfig: (config: ShippingConfig) => void;
+  setItems: (items: CartItem[]) => void;
   getSubtotal: () => number;
   getShipping: () => number;
   getTotal: () => number;
@@ -263,6 +265,12 @@ export const useCart = create<CartStore>((set, get) => ({
 
   clearState: () => {
     set({ items: [], isInitialized: false, isLoading: false, loadingProducts: new Set() });
+  },
+  setShippingConfig: (config: ShippingConfig) => {
+    set({ shippingConfig: config });
+  },
+  setItems: (items: CartItem[]) => {
+    set({ items, isInitialized: true });
   },
 }));
 

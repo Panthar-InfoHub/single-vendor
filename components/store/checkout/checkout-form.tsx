@@ -47,11 +47,39 @@ interface SavedAddress {
 interface CheckoutFormProps {
   userEmail: string | undefined;
   savedAddresses: SavedAddress[];
+  initialCartItems: any[];
+  initialShippingConfig: {
+    shippingCharge: number | null;
+    freeShippingMinOrder: number | null;
+  } | null;
 }
 
-export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
+export function CheckoutForm({
+  userEmail,
+  savedAddresses,
+  initialCartItems,
+  initialShippingConfig,
+}: CheckoutFormProps) {
   const router = useRouter();
-  const { items, getSubtotal, getShipping, clearCart, isLoading, isInitialized } = useCart();
+  const {
+    items,
+    getSubtotal,
+    getShipping,
+    clearCart,
+    isLoading,
+    isInitialized,
+    setShippingConfig,
+    setItems,
+  } = useCart();
+
+  useEffect(() => {
+    if (initialShippingConfig) {
+      setShippingConfig(initialShippingConfig);
+    }
+    if (initialCartItems && initialCartItems.length > 0) {
+      setItems(initialCartItems);
+    }
+  }, [initialShippingConfig, initialCartItems, setShippingConfig, setItems]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCouponApplying, setIsCouponApplying] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<
@@ -66,8 +94,8 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
     return defaultAddress
       ? defaultAddress.id
       : savedAddresses.length > 0
-      ? savedAddresses[0].id
-      : "new";
+        ? savedAddresses[0].id
+        : "new";
   });
 
   // Form state - Initialize with default/first address if available
@@ -105,13 +133,11 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
     };
   });
 
-  // Show loading state while cart is initializing
-  if (!isInitialized || isLoading) {
-    return <div>Loading...</div>;
-  }
+  // Use client items if initialized, otherwise fall back to server items
+  const displayItems = isInitialized ? items : initialCartItems;
 
-  // Show empty cart if no items - moved after all hooks
-  if (items.length === 0) {
+  // Show empty cart if no items
+  if (displayItems.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -126,13 +152,13 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
     );
   }
 
-  // Handle address selection
+  // Handle address selection - memoized to prevent unnecessary re-renders
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId);
 
     if (addressId === "new") {
       // Clear form for new address
-      setFormData({
+      setFormData((prev) => ({
         firstName: "",
         lastName: "",
         phone: "",
@@ -143,8 +169,8 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
         state: "",
         city: "",
         pinCode: "",
-        coupon: formData.coupon, // Keep coupon
-      });
+        coupon: prev.coupon, // Keep coupon
+      }));
     } else {
       // Pre-fill form with selected address
       const address = savedAddresses.find((addr) => addr.id === addressId);
@@ -261,7 +287,7 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
         email: formData.email || undefined,
       };
 
-      const orderItems = items.map((item) => ({
+      const orderItems = displayItems.map((item) => ({
         productId: item.productId,
         name: item.name,
         image: item.image,
@@ -383,24 +409,20 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
                 <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelect}>
                   <div className="space-y-3">
                     {savedAddresses.map((address) => (
-                      <div
+                      <Label
                         key={address.id}
-                        className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
-                          selectedAddressId === address.id
-                            ? "border-primary bg-primary/5"
-                            : "hover:border-primary/50"
-                        }`}
-                        onClick={() => handleAddressSelect(address.id)}
+                        htmlFor={address.id}
+                        className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${selectedAddressId === address.id
+                          ? "border-primary bg-primary/5"
+                          : "hover:border-primary/50"
+                          }`}
                       >
                         <RadioGroupItem
                           value={address.id}
                           id={address.id}
                           className="mt-0.5 shrink-0"
                         />
-                        <Label
-                          htmlFor={address.id}
-                          className="flex-1 cursor-pointer space-y-1 min-w-0"
-                        >
+                        <div className="flex-1 space-y-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-medium text-sm sm:text-base break-words">
                               {address.firstName} {address.lastName}
@@ -421,27 +443,26 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
                           <p className="text-xs sm:text-sm text-muted-foreground">
                             {address.phone}
                           </p>
-                        </Label>
-                      </div>
+                        </div>
+                      </Label>
                     ))}
 
                     {/* Use New Address Option */}
-                    <div
-                      className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
-                        selectedAddressId === "new"
-                          ? "border-primary bg-primary/5"
-                          : "hover:border-primary/50"
-                      }`}
-                      onClick={() => handleAddressSelect("new")}
+                    <Label
+                      htmlFor="new"
+                      className={`flex items-start space-x-2 sm:space-x-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${selectedAddressId === "new"
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-primary/50"
+                        }`}
                     >
                       <RadioGroupItem value="new" id="new" className="mt-0.5 shrink-0" />
-                      <Label htmlFor="new" className="flex-1 cursor-pointer">
+                      <div className="flex-1 cursor-pointer">
                         <p className="font-medium text-sm sm:text-base">Use a new address</p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           Enter a new delivery address below
                         </p>
-                      </Label>
-                    </div>
+                      </div>
+                    </Label>
                   </div>
                 </RadioGroup>
               </Card>
@@ -579,7 +600,7 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
             <Card className="p-4 sm:p-6 space-y-2">
               {/* Cart Items */}
               <div className="space-y-2 max-h-[250px] sm:max-h-[300px] lg:max-h-none overflow-y-auto">
-                {items.map((item) => (
+                {displayItems.map((item) => (
                   <div key={item.id} className="flex gap-3 sm:gap-4">
                     <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-lg border overflow-hidden bg-muted shrink-0">
                       <Image
@@ -671,9 +692,15 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Subtotal • {items.length} item{items.length > 1 ? "s" : ""}
+                    Subtotal • {displayItems.length} item{displayItems.length > 1 ? "s" : ""}
                   </span>
-                  <span className="font-medium">{formatPrice(getSubtotal())}</span>
+                  <span className="font-medium">
+                    {formatPrice(
+                      isInitialized
+                        ? getSubtotal()
+                        : displayItems.reduce((acc, i) => acc + i.price * i.quantity, 0)
+                    )}
+                  </span>
                 </div>
 
                 {appliedCoupon && (
@@ -686,7 +713,21 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping Fee</span>
                   <span className="font-medium">
-                    {getShipping() === 0 ? "FREE" : formatPrice(getShipping())}
+                    {(() => {
+                      const sub = isInitialized
+                        ? getSubtotal()
+                        : displayItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+                      const ship = isInitialized
+                        ? getShipping()
+                        : initialShippingConfig
+                          ? initialShippingConfig.shippingCharge !== null &&
+                            (initialShippingConfig.freeShippingMinOrder === null ||
+                              sub < initialShippingConfig.freeShippingMinOrder)
+                            ? initialShippingConfig.shippingCharge
+                            : 0
+                          : 0;
+                      return ship === 0 ? "FREE" : formatPrice(ship);
+                    })()}
                   </span>
                 </div>
 
@@ -695,7 +736,21 @@ export function CheckoutForm({ userEmail, savedAddresses }: CheckoutFormProps) {
                 <div className="flex justify-between text-base font-semibold pt-2">
                   <span>Total</span>
                   <span>
-                    {formatPrice(getSubtotal() - (appliedCoupon?.discount || 0) + getShipping())}
+                    {(() => {
+                      const sub = isInitialized
+                        ? getSubtotal()
+                        : displayItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+                      const ship = isInitialized
+                        ? getShipping()
+                        : initialShippingConfig
+                          ? initialShippingConfig.shippingCharge !== null &&
+                            (initialShippingConfig.freeShippingMinOrder === null ||
+                              sub < initialShippingConfig.freeShippingMinOrder)
+                            ? initialShippingConfig.shippingCharge
+                            : 0
+                          : 0;
+                      return formatPrice(sub - (appliedCoupon?.discount || 0) + ship);
+                    })()}
                   </span>
                 </div>
               </div>

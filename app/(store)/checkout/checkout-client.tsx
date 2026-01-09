@@ -24,8 +24,25 @@ const CheckoutForm = dynamic(
 interface CheckoutClientProps {
   userEmail?: string;
   savedAddresses: Address[];
+  initialCartItems: any[];
+  initialShippingConfig: {
+    shippingCharge: number | null;
+    freeShippingMinOrder: number | null;
+  } | null;
 }
 
-export function CheckoutClient({ userEmail, savedAddresses }: CheckoutClientProps) {
-  return <CheckoutForm userEmail={userEmail} savedAddresses={savedAddresses} />;
+export function CheckoutClient({
+  userEmail,
+  savedAddresses,
+  initialCartItems,
+  initialShippingConfig,
+}: CheckoutClientProps) {
+  return (
+    <CheckoutForm
+      userEmail={userEmail}
+      savedAddresses={savedAddresses}
+      initialCartItems={initialCartItems}
+      initialShippingConfig={initialShippingConfig}
+    />
+  );
 }

@@ -67,21 +67,23 @@ export async function deductStockForOrder(
   }>,
   tx: any // Prisma transaction client
 ) {
-  for (const item of orderItems) {
-    const product = await tx.product.findUnique({
-      where: { id: item.productId },
-      select: { id: true, title: true, stock: true },
-    });
+  // Fetch all products involved in the order at once
+  const productIds = orderItems.map((i) => i.productId);
+  const products = await tx.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, title: true, stock: true },
+  });
 
-    if (!product) {
-      throw new Error(`Product not found: ${item.productId}`);
-    }
-
+  // 1. Validate ALL items first in memory
+  const updatePromises = orderItems.map((item) => {
+    const product = products.find((p: any) => p.id === item.productId);
+    if (!product) throw new Error(`Product not found: ${item.productId}`);
     if (product.stock < item.quantity) {
       throw new Error(`Insufficient stock for ${product.title}. Available: ${product.stock}`);
     }
 
-    await tx.product.update({
+    // 2. Prepare update promise
+    return tx.product.update({
       where: { id: item.productId },
       data: {
         stock: {
@@ -89,7 +91,10 @@ export async function deductStockForOrder(
         },
       },
     });
-  }
+  });
+
+  // 3. Execute all updates in parallel within the transaction
+  await Promise.all(updatePromises);
 }
 
 /**
@@ -100,50 +105,35 @@ export async function updateCouponUsage(
   userId: string,
   tx: any // Prisma transaction client
 ) {
+  // 1. Fetch coupon ID (needed for upsert)
   const coupon = await tx.coupon.findUnique({
     where: { code: couponCode },
+    select: { id: true },
   });
 
-  if (!coupon) {
-    return; // Coupon doesn't exist, skip
-  }
+  if (!coupon) return;
 
-  // Update global usage count
-  await tx.coupon.update({
-    where: { id: coupon.id },
-    data: {
-      totalUsed: {
-        increment: 1,
-      },
-    },
-  });
-
-  // Track per-user usage
-  const existingUsage = await tx.couponUsage.findUnique({
-    where: {
-      couponId_userId: {
-        couponId: coupon.id,
-        userId: userId,
-      },
-    },
-  });
-
-  if (existingUsage) {
-    await tx.couponUsage.update({
-      where: { id: existingUsage.id },
-      data: {
-        usedCount: {
-          increment: 1,
+  // 2. Parallelize global increment and per-user upsert
+  await Promise.all([
+    // Update global usage count
+    tx.coupon.update({
+      where: { id: coupon.id },
+      data: { totalUsed: { increment: 1 } },
+    }),
+    // Track per-user usage using upsert
+    tx.couponUsage.upsert({
+      where: {
+        couponId_userId: {
+          couponId: coupon.id,
+          userId: userId,
         },
       },
-    });
-  } else {
-    await tx.couponUsage.create({
-      data: {
+      update: { usedCount: { increment: 1 } },
+      create: {
         couponId: coupon.id,
         userId: userId,
         usedCount: 1,
       },
-    });
-  }
+    }),
+  ]);
 }

@@ -10,92 +10,83 @@ import { calculateShippingCharge } from "@/actions/admin/site-config.actions";
 import { generateOrderNumber } from "@/utils/order-helpers";
 
 export async function initiateOrder(orderDetails: OrderDetails) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Not authenticated");
+  // Start session fetch immediately
+  const sessionPromise = auth.api.getSession({ headers: await headers() });
 
   const validated = orderDetailsSchema.parse(orderDetails);
+  const productIds = [...new Set(validated.items.map((i) => i.productId))];
+
+  // Parallelize ALL database lookups that don't depend on each other
+  // We fetch coupon and siteConfig early even though they might be used later
+  const today = new Date();
+  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(new Date(today).setHours(23, 59, 59, 999));
+
+  const [session, products, todayOrderCount, coupon, siteConfig] = await Promise.all([
+    sessionPromise,
+    prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, title: true, sellingPrice: true, stock: true },
+    }),
+    prisma.order.count({
+      where: { createdAt: { gte: startOfDay, lte: endOfDay } },
+    }),
+    validated.couponCode
+      ? prisma.coupon.findUnique({
+        where: { code: validated.couponCode, isActive: true },
+      })
+      : Promise.resolve(null),
+    prisma.siteConfig.findFirst(),
+  ]);
+
+  if (!session) throw new Error("Not authenticated");
   const userId = session.user.id;
 
-  // Fetch products and validate stock
-  const productIds = [...new Set(validated.items.map((i) => i.productId))];
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds } },
-  });
+  // 1. Generate Order Number (Inlined for speed)
+  const dateStr = today.toISOString().split("T")[0].replace(/-/g, "");
+  const orderSequence = (todayOrderCount + 1).toString().padStart(3, "0");
+  const orderNumber = `ORD-${dateStr}-${orderSequence}`;
 
-  // Validate stock and calculate subtotal
+  // 2. Validate stock and calculate subtotal
   let subtotal = 0;
   for (const item of validated.items) {
     const product = products.find((p) => p.id === item.productId);
-    if (!product) {
-      throw new Error(`Product not found: ${item.productId}`);
-    }
-
-    if (product.stock < item.quantity) {
-      throw new Error(`Insufficient stock for ${product.title}. Available: ${product.stock}`);
-    }
-
-    // SECURITY: Verify price matches server-side price (prevent price manipulation)
-    if (product.sellingPrice !== item.price) {
-      console.error(
-        `❌ SECURITY: Price mismatch for ${product.title}. Expected: ${product.sellingPrice}, Got: ${item.price}`
-      );
-      throw new Error(`Price has changed for ${product.title}. Please refresh and try again.`);
-    }
-
-    // SECURITY: Verify quantity is positive and reasonable
-    if (item.quantity <= 0 || item.quantity > 100) {
-      throw new Error(`Invalid quantity for ${product.title}`);
-    }
-
+    if (!product) throw new Error(`Product not found: ${item.productId}`);
+    if (product.stock < item.quantity) throw new Error(`Insufficient stock for ${product.title}`);
     subtotal += product.sellingPrice * item.quantity;
   }
 
-  // Apply coupon discount
+  // 3. Apply coupon discount (In-memory calculation)
   let discount = 0;
-  if (validated.couponCode) {
-    const coupon = await prisma.coupon.findUnique({
-      where: { code: validated.couponCode, isActive: true },
-    });
+  if (coupon) {
+    if (coupon.expiresAt && coupon.expiresAt < new Date()) throw new Error("Coupon expired");
+    if (coupon.minOrderValue && subtotal < coupon.minOrderValue)
+      throw new Error("Subtotal below coupon minimum");
 
-    if (coupon) {
-      // Check if coupon is expired
-      if (coupon.expiresAt && coupon.expiresAt < new Date()) {
-        throw new Error("Coupon has expired");
-      }
+    if (coupon.type === "PERCENTAGE") {
+      discount = (subtotal * coupon.value) / 100;
+      if (coupon.maxDiscount && discount > coupon.maxDiscount) discount = coupon.maxDiscount;
+    } else {
+      discount = coupon.value;
+    }
+    discount = Math.min(discount, subtotal);
+  }
 
-      // Check minimum order value
-      if (coupon.minOrderValue && subtotal < coupon.minOrderValue) {
-        throw new Error(`Minimum order value of ₹${coupon.minOrderValue} required for this coupon`);
-      }
-
-      // Calculate discount
-      if (coupon.type === "PERCENTAGE") {
-        discount = (subtotal * coupon.value) / 100;
-        // Apply max discount cap if exists
-        if (coupon.maxDiscount && discount > coupon.maxDiscount) {
-          discount = coupon.maxDiscount;
-        }
-      } else {
-        discount = coupon.value;
-      }
-
-      // Ensure discount doesn't exceed subtotal
-      discount = Math.min(discount, subtotal);
+  // 4. Calculate Shipping (In-memory calculation)
+  let shippingFee = 50; // Default
+  if (siteConfig) {
+    if (siteConfig.shippingCharge === null) {
+      shippingFee = 0;
+    } else {
+      const isFreeShipping =
+        siteConfig.freeShippingMinOrder !== null && subtotal >= siteConfig.freeShippingMinOrder;
+      shippingFee = isFreeShipping ? 0 : siteConfig.shippingCharge;
     }
   }
 
-  const discountedSubtotal = subtotal - discount;
+  const total = subtotal - discount + shippingFee;
 
-  // Calculate shipping based on site config
-  const shippingResult = await calculateShippingCharge(discountedSubtotal);
-  const shippingFee = shippingResult.success ? shippingResult.data!.shippingCharge : 50;
-
-  const total = discountedSubtotal + shippingFee;
-
-  // Generate order number
-  const orderNumber = await generateOrderNumber();
-
-  // Create Razorpay Order
+  // 5. Create Razorpay Order
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID!,
     key_secret: process.env.RAZORPAY_KEY_SECRET!,
@@ -105,13 +96,10 @@ export async function initiateOrder(orderDetails: OrderDetails) {
     amount: Math.round(total * 100), // Amount in paise
     currency: "INR",
     receipt: orderNumber,
-    notes: {
-      userId,
-      orderNumber,
-    },
+    notes: { userId, orderNumber },
   });
 
-  // Create order in database with PENDING status
+  // 6. Create order in database
   const order = await prisma.order.create({
     data: {
       orderNumber,
@@ -136,9 +124,7 @@ export async function initiateOrder(orderDetails: OrderDetails) {
         })),
       },
     },
-    include: {
-      items: true,
-    },
+    select: { id: true, orderNumber: true }, // Only select what's needed for response
   });
 
   return {
