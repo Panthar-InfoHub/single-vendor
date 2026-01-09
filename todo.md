@@ -1,1 +1,5 @@
-- if category delte show pop that delte all nested category or only this and make nested as separate
+- chcek if mulitple images allow scrolling the thimbnail from bottom,
+- make category same as the robocraze 
+- revamp the hero section. 
+- for google review it is just a images added not fetched from google
+- and in top navigation section i cant make all pages 
