@@ -118,35 +118,51 @@ export async function getDashboardStats(
 export async function getRevenueData() {
   try {
     const now = new Date();
-    const months = [];
 
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const nextDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    // Create an array of promises for each of the last 12 months
+    const monthPromises = Array.from({ length: 12 }, (_, i) => {
+      const monthIndex = 11 - i;
+      const date = new Date(now.getFullYear(), now.getMonth() - monthIndex, 1);
+      const nextDate = new Date(now.getFullYear(), now.getMonth() - monthIndex + 1, 1);
 
-      const [revenue, orders] = await Promise.all([
-        prisma.order.aggregate({
-          where: {
-            createdAt: { gte: date, lt: nextDate },
-            status: { notIn: ["CANCELLED", "FAILED"] },
-          },
-          _sum: { total: true },
-        }),
-        prisma.order.count({
-          where: {
-            createdAt: { gte: date, lt: nextDate },
-          },
-        }),
-      ]);
+      return (async () => {
+        const [revenue, orders] = await Promise.all([
+          prisma.order.aggregate({
+            where: {
+              createdAt: { gte: date, lt: nextDate },
+              status: { notIn: ["CANCELLED", "FAILED"] },
+            },
+            _sum: { total: true },
+          }),
+          prisma.order.count({
+            where: {
+              createdAt: { gte: date, lt: nextDate },
+            },
+          }),
+        ]);
 
-      months.push({
-        month: date.toLocaleString("default", { month: "short" }),
-        revenue: revenue._sum.total || 0,
-        orders,
-      });
-    }
+        return {
+          month: date.toLocaleString("default", { month: "short" }),
+          revenue: revenue._sum.total || 0,
+          orders,
+          timestamp: date.getTime(), // For sorting later
+        };
+      })();
+    });
 
-    return { success: true, data: months };
+    const months = await Promise.all(monthPromises);
+
+    // Sort by timestamp to ensure chronological order
+    months.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Remove internal timestamp before returning
+    const finalData = months.map(({ month, revenue, orders }) => ({
+      month,
+      revenue,
+      orders,
+    }));
+
+    return { success: true, data: finalData };
   } catch (error) {
     console.error("Error fetching revenue data:", error);
     return { success: false, error: "Failed to fetch revenue data" };
@@ -212,7 +228,7 @@ export async function getTopProducts(limit: number = 5) {
         sales: item._sum.quantity || 0,
         orders: item._count.productId,
         image: product?.images[0] || "/placeholder.svg",
-        category: product?.category.name || "Unknown",
+        category: product?.category?.name || "Unknown",
       };
     });
 
@@ -245,17 +261,24 @@ export async function getOrdersByStatus(timeFilter: "30days" | "90days" | "lifet
 
     const statuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "FAILED"];
 
-    const statusCounts = await Promise.all(
-      statuses.map(async (status) => {
-        const count = await prisma.order.count({
-          where: {
-            createdAt: { gte: startDate },
-            status: status as any,
-          },
-        });
-        return { status, count };
-      })
-    );
+    const groupResults = await prisma.order.groupBy({
+      by: ["status"],
+      where: {
+        createdAt: { gte: startDate },
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Map the results back to ensuring all statuses are represented
+    const statusCounts = statuses.map((status) => {
+      const result = groupResults.find((r) => r.status === status);
+      return {
+        status,
+        count: result?._count?._all || 0,
+      };
+    });
 
     return { success: true, data: statusCounts };
   } catch (error) {
