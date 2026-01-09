@@ -93,45 +93,36 @@ export async function ShopCategoryCards() {
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:auto-rows-[220px]">
+        <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-4 gap-4 md:gap-6">
           {categories.slice(0, 5).map((category, index) => {
             const minPrice = category.products[0]?.sellingPrice;
             const hasImage = category.image && category.image.trim() !== "";
             const gradient = gradients[index % gradients.length];
 
-            // Layout logic for Desktop (lg)
-            const isLargeSquare = index === 0;
-            const isRightStack = index === 1 || index === 2;
-            const isBottomRow = index === 3 || index === 4;
+            // Specific layout logic for the 1-large + 4-small design
+            const isLarge = index === 0;
+            const isSecond = index === 1;
 
-            let gridClasses = "col-span-1 row-span-1"; // Default for mobile - small cards
-
-            // Desktop Layout:
-            // Item 0: Big Square (Left) -> 2x2
-            // Item 1 & 2: Wide Rectangles (Right) -> 2x1 each, stacked
-            // Item 3 & 4: Wide Rectangles (Bottom) -> 2x1 each, side by side
-
-            if (isLargeSquare) {
-              // First item: 2 columns on mobile, 2x2 on desktop
-              gridClasses = "col-span-2 row-span-1 lg:col-span-2 lg:row-span-2";
-            } else if (isRightStack) {
-              gridClasses = "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1";
-            } else if (isBottomRow) {
-              gridClasses = "col-span-1 row-span-1 lg:col-span-2 lg:row-span-1";
+            // Spanning Logic:
+            // Mobile (cols 2): [0]=2, [1,2,3,4]=1 -> Balanced rows
+            // Tablet (cols 6): [0,1]=3, [2,3,4]=2 -> Two perfect rows (2 then 3)
+            // Desktop (cols 4): [0]=2x2, [1,2,3,4]=1x1 -> 1 big, 4 small stack
+            let gridClasses = "";
+            if (isLarge) {
+              gridClasses = "col-span-2 md:col-span-3 lg:col-span-2 lg:row-span-2";
+            } else if (isSecond) {
+              gridClasses = "col-span-1 md:col-span-3 lg:col-span-1 lg:row-span-1";
+            } else {
+              gridClasses = "col-span-1 md:col-span-2 lg:col-span-1 lg:row-span-1";
             }
 
             return (
               <Link
                 key={category.id}
                 href={`/categories/${category.slug}`}
-                className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] ${gridClasses}`}
+                className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.01] hover:shadow-2xl ${gridClasses}`}
               >
-                <div
-                  className={`relative w-full h-full ${
-                    // Aspect ratios - Mobile only
-                    isLargeSquare ? "aspect-square lg:aspect-auto" : "aspect-square lg:aspect-auto"
-                  }`}
-                >
+                <div className="relative w-full h-full aspect-square">
                   {hasImage ? (
                     <>
                       <Image
@@ -140,12 +131,12 @@ export async function ShopCategoryCards() {
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes={
-                          isLargeSquare
-                            ? "(max-width: 768px) 100vw, 50vw"
-                            : "(max-width: 768px) 100vw, 50vw"
+                          isLarge
+                            ? "(max-width: 768px) 100vw, (max-width: 1024px) 66vw, 50vw"
+                            : "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         }
                       />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent group-hover:from-black/90 transition-colors duration-500" />
                     </>
                   ) : (
                     <>
@@ -157,28 +148,41 @@ export async function ShopCategoryCards() {
                     </>
                   )}
 
-                  <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                  {/* Content Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8 transform transition-transform duration-500 group-hover:-translate-y-1">
                     <h3
-                      className={`font-bold text-white mb-1 drop-shadow-lg ${
-                        isLargeSquare ? "text-xl md:text-3xl" : "text-base md:text-xl"
-                      }`}
+                      className={`font-bold text-white mb-2 drop-shadow-lg tracking-tight ${isLarge ? "text-xl md:text-3xl lg:text-4xl" :
+                          isSecond ? "text-base md:text-3xl lg:text-xl" : // Large on tablet
+                            "text-base md:text-lg lg:text-xl"
+                        }`}
                     >
                       {category.name}
                     </h3>
-                    {minPrice && (
-                      <p
-                        className={`text-white/90 font-medium drop-shadow ${
-                          isLargeSquare ? "text-sm md:text-lg" : "text-xs md:text-sm"
-                        }`}
-                      >
-                        Starting from {formatPrice(minPrice)}
+
+                    {isLarge && category.description && (
+                      <p className="text-white/80 text-sm md:text-base mb-4 max-w-lg line-clamp-2 md:line-clamp-3">
+                        {category.description}
                       </p>
+                    )}
+
+                    {minPrice && (
+                      <div className="flex items-center">
+                        <span
+                          className={`text-white/90 font-medium px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-sm ${isLarge ? "text-xs md:text-base" :
+                              isSecond ? "text-[10px] md:text-base lg:text-xs" : // Larger on tablet
+                                "text-[10px] md:text-xs"
+                            }`}
+                        >
+                          Starting from {formatPrice(minPrice)}
+                        </span>
+                      </div>
                     )}
                   </div>
 
-                  <div className="absolute top-4 right-4 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300 shadow-lg">
+                  {/* Arrow Indicator */}
+                  <div className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300 shadow-lg border border-white/20">
                     <svg
-                      className="w-4 h-4 text-gray-900"
+                      className="w-4 h-4 md:w-5 md:h-5 text-gray-900"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
