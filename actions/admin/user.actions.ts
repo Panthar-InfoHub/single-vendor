@@ -31,35 +31,30 @@ export async function getUsers(filters?: {
       ];
     }
 
-    // Get total count
-    const totalCount = await prisma.user.count({ where });
-
-    // Fetch paginated users
-    const users = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        _count: {
-          select: {
-            orders: true,
+    // Run count and data fetch in parallel
+    const [totalCount, users] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          _count: {
+            select: {
+              orders: true,
+            },
           },
         },
-        orders: {
-          select: {
-            total: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: pageSize,
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+    ]);
 
-    // Calculate total spent for each user
+    // Map to required format without expensive sum calculation
     const usersWithStats = users.map((user) => ({
       id: user.id,
       name: user.name,
@@ -67,7 +62,7 @@ export async function getUsers(filters?: {
       role: user.role,
       createdAt: user.createdAt,
       totalOrders: user._count.orders,
-      totalSpent: user.orders.reduce((sum, order) => sum + order.total, 0),
+      totalSpent: 0, // Placeholder as it's not shown in the main table
     }));
 
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -91,51 +86,49 @@ export async function getUsers(filters?: {
 // Get single user with detailed stats
 export async function getUser(id: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-        _count: {
-          select: {
-            orders: true,
+    const [user, revenueAggregate] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          emailVerified: true,
+          createdAt: true,
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
+          orders: {
+            select: {
+              id: true,
+              orderNumber: true,
+              total: true,
+              status: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5,
           },
         },
-        orders: {
-          select: {
-            id: true,
-            orderNumber: true,
-            total: true,
-            status: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-          take: 5,
-        },
-      },
-    });
+      }),
+      prisma.order.aggregate({
+        where: { userId: id, status: { notIn: ["CANCELLED", "FAILED"] } },
+        _sum: { total: true },
+      }),
+    ]);
 
     if (!user) {
       return { success: false, error: "User not found" };
     }
 
-    // Calculate total spent
-    const allOrders = await prisma.order.findMany({
-      where: { userId: id },
-      select: { total: true },
-    });
-
-    const totalSpent = allOrders.reduce((sum, order) => sum + order.total, 0);
-
     return {
       success: true,
       data: {
         ...user,
-        totalSpent,
+        totalSpent: revenueAggregate._sum.total || 0,
       },
     };
   } catch (error) {

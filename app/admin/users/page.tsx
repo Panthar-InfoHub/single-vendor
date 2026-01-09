@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import { UsersTableWrapper } from "@/components/admin/customer/users-table-wrapper";
-import { Card, CardContent } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { requireAdmin } from "@/lib/admin-auth";
+import { UserStats, UserStatsSkeleton } from "@/components/admin/customer/user-stats";
+import { AdminTableSkeleton } from "@/components/ui/loading-skeleton";
 
 interface AdminUsersPageProps {
   searchParams: Promise<{
@@ -13,9 +12,6 @@ interface AdminUsersPageProps {
 }
 
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
-  // Protect page - only admins can access
-  // await requireAdmin();
-
   const params = await searchParams;
 
   return (
@@ -25,15 +21,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         <p className="text-muted-foreground mt-1">Manage customer accounts and roles</p>
       </div>
 
-      <Suspense
-        fallback={
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <LoadingSpinner />
-            </CardContent>
-          </Card>
-        }
-      >
+      <Suspense fallback={<UserStatsSkeleton />}>
+        <UserStats />
+      </Suspense>
+
+      <Suspense fallback={<AdminTableSkeleton rows={10} />}>
         <UsersTableWrapper filters={params} />
       </Suspense>
     </div>
