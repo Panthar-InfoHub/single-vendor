@@ -26,7 +26,7 @@ export const siteConfig = {
     facebook: "",
     instagram: "https://www.instagram.com/vyomtics",
     twitter: "",
-    youtube: "",
+    youtube: "https://www.youtube.com/@VyomticsPoweredbyN.LEnterprise",
     linkedin: "",
   },
 
