@@ -34,6 +34,8 @@ const RecentOrdersList = nextDynamic(
 );
 
 import { DashboardHeader } from "@/components/admin/dashboard/dashboard-header-client";
+import { DashboardProvider } from "@/components/admin/dashboard/dashboard-context";
+import { DashboardTransitionWrapper } from "@/components/admin/dashboard/dashboard-transition-wrapper";
 
 export const dynamic = "force-dynamic";
 
@@ -46,38 +48,53 @@ export default async function AdminDashboardPage({
   const timeFilter = (filter as any) || "lifetime";
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      {/* Client Component Header for Filter Navigation */}
-      <DashboardHeader initialFilter={timeFilter} />
+    <DashboardProvider>
+      <div className="space-y-6 p-4 md:p-6 lg:p-8">
+        {/* Client Component Header for Filter Navigation */}
+        <DashboardHeader initialFilter={timeFilter} />
 
-      {/* Dynamic Parts wrapped in Suspense */}
-      <div className="space-y-6">
-        <Suspense fallback={<StatsSkeleton />}>
-          <StatsWrapper filter={timeFilter} />
-        </Suspense>
+        {/* Dynamic Parts wrapped in Suspense and Transition Wrapper */}
+        <div className="space-y-6">
+          <DashboardTransitionWrapper fallback={<StatsSkeleton />}>
+            <Suspense fallback={<StatsSkeleton />}>
+              <StatsWrapper filter={timeFilter} />
+            </Suspense>
+          </DashboardTransitionWrapper>
 
-        <Suspense fallback={<ChartSkeleton height="350px" />}>
-          <RevenueWrapper />
-        </Suspense>
+          <DashboardTransitionWrapper fallback={<ChartSkeleton height="350px" />}>
+            <Suspense fallback={<ChartSkeleton height="350px" />}>
+              <RevenueWrapper />
+            </Suspense>
+          </DashboardTransitionWrapper>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <Suspense fallback={<ChartSkeleton height="350px" />}>
-            <CategoryWrapper />
-          </Suspense>
-          <Suspense fallback={<ChartSkeleton height="350px" />}>
-            <RevenueWrapper forComparison />
-          </Suspense>
+          <div className="grid lg:grid-cols-2 gap-6">
+            <DashboardTransitionWrapper fallback={<ChartSkeleton height="350px" />}>
+              <Suspense fallback={<ChartSkeleton height="350px" />}>
+                <CategoryWrapper />
+              </Suspense>
+            </DashboardTransitionWrapper>
+
+            <DashboardTransitionWrapper fallback={<ChartSkeleton height="350px" />}>
+              <Suspense fallback={<ChartSkeleton height="350px" />}>
+                <RevenueWrapper forComparison />
+              </Suspense>
+            </DashboardTransitionWrapper>
+          </div>
+
+          <DashboardTransitionWrapper fallback={<ChartSkeleton height="300px" />}>
+            <Suspense fallback={<ChartSkeleton height="300px" />}>
+              <OrderStatusChart />
+            </Suspense>
+          </DashboardTransitionWrapper>
+
+          <DashboardTransitionWrapper fallback={<ChartSkeleton height="400px" />}>
+            <Suspense fallback={<ChartSkeleton height="400px" />}>
+              <RecentOrdersList />
+            </Suspense>
+          </DashboardTransitionWrapper>
         </div>
-
-        <Suspense fallback={<ChartSkeleton height="300px" />}>
-          <OrderStatusChart />
-        </Suspense>
-
-        <Suspense fallback={<ChartSkeleton height="400px" />}>
-          <RecentOrdersList />
-        </Suspense>
       </div>
-    </div>
+    </DashboardProvider>
   );
 }
 
@@ -120,6 +137,7 @@ function ChartSkeleton({ height }: { height: string }) {
   return (
     <Card>
       <CardContent className="p-6">
+        <Skeleton className="h-6 w-48 mb-4 md:mb-6" />
         <Skeleton style={{ height }} className="w-full" />
       </CardContent>
     </Card>

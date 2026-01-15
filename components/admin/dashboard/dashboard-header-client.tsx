@@ -1,12 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useDashboard } from "@/components/admin/dashboard/dashboard-context";
+import { useRouter } from "next/navigation";
 import { TimeFilter, type TimeFilter as TimeFilterType } from "@/components/admin/dashboard/time-filter";
 
 export function DashboardHeader({ initialFilter }: { initialFilter: string }) {
     const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+    const { isPending, startTransition } = useDashboard();
 
     const handleFilterChange = (value: TimeFilterType) => {
         startTransition(() => {
@@ -19,7 +19,7 @@ export function DashboardHeader({ initialFilter }: { initialFilter: string }) {
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
                 <p className="text-muted-foreground mt-1">
-                    {isPending ? "Updating dashboard..." : "Your store performance at a glance"}
+                    Your store performance at a glance
                 </p>
             </div>
             <TimeFilter value={initialFilter as any} onValueChange={handleFilterChange} />

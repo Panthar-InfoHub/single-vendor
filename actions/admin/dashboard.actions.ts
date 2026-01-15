@@ -172,7 +172,11 @@ export async function getRevenueData() {
 // Get category distribution for pie chart
 export async function getCategoryDistribution() {
   try {
+    // only parent category with products count
     const categories = await prisma.category.findMany({
+      where: {
+        parent: null,
+      },
       include: {
         _count: {
           select: { products: true },

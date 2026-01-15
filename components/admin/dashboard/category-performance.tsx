@@ -55,9 +55,9 @@ export function CategoryPerformance({ data }: CategoryPerformanceProps) {
       </CardHeader>
       <CardContent className="pb-0">
         <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
-          <RadarChart data={data}>
+          <RadarChart data={data} className="overflow-visible!">
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <PolarAngleAxis dataKey="name" />
+            <PolarAngleAxis dataKey="name" className=""/>
             <PolarGrid className="fill-muted/50" />
             <Radar
               dataKey="value"
