@@ -31,7 +31,7 @@ export function generatePageMetadata({
       title: pageTitle,
       description: pageDescription,
       type: "website",
-      locale: "en_US",
+      locale: "en_IN",
       url: url,
       siteName: siteConfig.name,
       images: [

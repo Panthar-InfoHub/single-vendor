@@ -13,8 +13,36 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: `${siteConfig.title}`,
+  metadataBase: new URL(siteConfig.domain),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.title}`,
+  },
   description: siteConfig.description,
+  keywords: [
+    "Robotics",
+    "IoT",
+    "AI",
+    "Drones",
+    "STEM Education",
+    "Electronics Components",
+    "Arduino",
+    "Raspberry Pi",
+    "DIY Kits",
+  ],
+  authors: [{ name: "Vyomtics" }],
+  creator: "Vyomtics",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
