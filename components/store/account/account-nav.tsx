@@ -26,10 +26,29 @@ export function AccountNav() {
     try {
       await authClient.signOut();
       toast.success("Logged out successfully");
-      router.push("/");
     } catch (error) {
-      toast.error("Failed to logout");
       console.error("Logout error:", error);
+      // If we get a 400 or other error, the session might already be gone
+      // We still want to redirect the user to the home page
+      toast.info("Session ended");
+    } finally {
+      // Manual cleanup of non-httpOnly cookies just in case
+      try {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+          if (name.includes("better-auth")) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          }
+        }
+      } catch (e) {
+        console.error("Cookie cleanup error:", e);
+      }
+
+      // Force reload to clear all states and redirect to home
+      window.location.href = "/";
     }
   };
 

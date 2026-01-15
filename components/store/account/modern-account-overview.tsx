@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Package, MapPin, Heart, Loader2, ShoppingBag, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const getStatusConfig = (status: OrderStatus) => {
 };
 
 export function ModernAccountOverview() {
+  const router = useRouter();
   const { data: session, isPending } = useSession();
   const { items: wishlistItems } = useWishlist();
   const [orderCount, setOrderCount] = useState(0);
@@ -32,6 +34,13 @@ export function ModernAccountOverview() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (isPending) return;
+
+    if (!session?.user) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
         const orderStatsRes = await getUserOrderStats();
@@ -52,12 +61,13 @@ export function ModernAccountOverview() {
       }
     };
 
-    if (session?.user) {
-      fetchStats();
-    }
-  }, [session]);
+    fetchStats();
+  }, [session, isPending]);
 
-  if (isPending || isLoading) {
+  if (isPending || isLoading || !session?.user) {
+    if (!isPending && !isLoading && !session?.user) {
+      router.push("/login");
+    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
