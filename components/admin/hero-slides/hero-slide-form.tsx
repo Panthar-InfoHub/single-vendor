@@ -107,7 +107,7 @@ export function HeroSlideForm({ slide, onClose, onSuccess }: HeroSlideFormProps)
       subtitle: slideType === "IMAGE_WITH_CONTENT" ? subtitle : undefined,
       description: slideType === "IMAGE_WITH_CONTENT" ? description : undefined,
       buttonText: slideType === "IMAGE_WITH_CONTENT" ? buttonText : undefined,
-      buttonLink: slideType === "IMAGE_WITH_CONTENT" ? buttonLink : undefined,
+      buttonLink: buttonLink || undefined,
     };
 
     const result = slide ? await updateHeroSlide(slide.id, data) : await createHeroSlide(data);
@@ -149,11 +149,10 @@ export function HeroSlideForm({ slide, onClose, onSuccess }: HeroSlideFormProps)
               onValueChange={(value) => setSlideType(value as typeof slideType)}
             >
               <Card
-                className={`p-4 cursor-pointer transition-all ${
-                  slideType === "IMAGE_WITH_CONTENT"
-                    ? "border-primary bg-primary/5"
-                    : "hover:border-muted-foreground/20"
-                }`}
+                className={`p-4 cursor-pointer transition-all ${slideType === "IMAGE_WITH_CONTENT"
+                  ? "border-primary bg-primary/5"
+                  : "hover:border-muted-foreground/20"
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <RadioGroupItem value="IMAGE_WITH_CONTENT" id="with-content" />
@@ -179,11 +178,10 @@ export function HeroSlideForm({ slide, onClose, onSuccess }: HeroSlideFormProps)
               </Card>
 
               <Card
-                className={`p-4 cursor-pointer transition-all ${
-                  slideType === "IMAGE_ONLY"
-                    ? "border-primary bg-primary/5"
-                    : "hover:border-muted-foreground/20"
-                }`}
+                className={`p-4 cursor-pointer transition-all ${slideType === "IMAGE_ONLY"
+                  ? "border-primary bg-primary/5"
+                  : "hover:border-muted-foreground/20"
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <RadioGroupItem value="IMAGE_ONLY" id="image-only" />
@@ -252,14 +250,29 @@ export function HeroSlideForm({ slide, onClose, onSuccess }: HeroSlideFormProps)
           </div>
 
           {/* Image Alt Text */}
-          <div className="space-y-2">
-            <Label htmlFor="imageAlt">Image Alt Text (for SEO)</Label>
-            <Input
-              id="imageAlt"
-              value={imageAlt}
-              onChange={(e) => setImageAlt(e.target.value)}
-              placeholder="Describe the image for accessibility"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="imageAlt">Image Alt Text (for SEO)</Label>
+              <Input
+                id="imageAlt"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                placeholder="Describe the image for accessibility"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="heroSlideLink">Slide Link (Entire slide becomes clickable)</Label>
+              <Input
+                id="heroSlideLink"
+                value={buttonLink}
+                onChange={(e) => setButtonLink(e.target.value)}
+                placeholder="/products or https://..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional: Enter a URL to make the entire slide a clickable link.
+              </p>
+            </div>
           </div>
 
           {/* Content Fields - Only for IMAGE_WITH_CONTENT */}

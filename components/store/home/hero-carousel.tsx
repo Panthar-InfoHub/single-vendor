@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import type { HeroSlide } from "@/prisma/generated/prisma";
 
@@ -69,15 +70,9 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
     <div className="relative w-full">
       {/* Hero Carousel Container - Full width on ALL screens */}
       <div className="relative w-full">
-        {activeSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0 absolute inset-0"
-            }`}
-          >
-            {/* Image with maintained aspect ratio - natural height */}
-            <div className="relative w-full">
+        {activeSlides.map((slide, index) => {
+          const slideContent = (
+            <div className="relative w-full overflow-hidden cursor-pointer group">
               <Image
                 src={slide.image}
                 alt={slide.imageAlt || "Hero banner"}
@@ -88,8 +83,24 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
                 priority={index === 0}
               />
             </div>
-          </div>
-        ))}
+          );
+
+          return (
+            <div
+              key={slide.id}
+              className={`transition-opacity duration-700 ${index === currentSlide ? "opacity-100 pointer-events-auto" : "opacity-0 absolute inset-0 pointer-events-none"
+                }`}
+            >
+              {slide.buttonLink ? (
+                <Link href={slide.buttonLink} className="block w-full">
+                  {slideContent}
+                </Link>
+              ) : (
+                slideContent
+              )}
+            </div>
+          );
+        })}
 
         {/* Navigation Arrows - Only show if more than 1 slide */}
         {activeSlides.length > 1 && (
@@ -116,9 +127,8 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`h-2 rounded-full transition-all ${
-                    index === currentSlide ? "w-8 bg-gray-800" : "w-2 bg-gray-400 hover:bg-gray-600"
-                  }`}
+                  className={`h-2 rounded-full transition-all ${index === currentSlide ? "w-8 bg-gray-800" : "w-2 bg-gray-400 hover:bg-gray-600"
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}

@@ -27,6 +27,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
   const [isActive, setIsActive] = useState(slide?.isActive ?? true);
   const [image, setImage] = useState(slide?.image || "");
   const [imageAlt, setImageAlt] = useState(slide?.imageAlt || "");
+  const [buttonLink, setButtonLink] = useState(slide?.buttonLink || "");
 
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,6 +83,7 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
       isActive,
       image,
       imageAlt,
+      buttonLink: buttonLink || undefined,
     };
 
     const result = slide ? await updateHeroSlide(slide.id, data) : await createHeroSlide(data);
@@ -157,14 +159,29 @@ export function HeroSlideFormPage({ slide }: HeroSlideFormPageProps) {
           </div>
 
           {/* Image Alt Text */}
-          <div className="space-y-2">
-            <Label htmlFor="imageAlt">Image Alt Text (for SEO)</Label>
-            <Input
-              id="imageAlt"
-              value={imageAlt}
-              onChange={(e) => setImageAlt(e.target.value)}
-              placeholder="Describe the image for accessibility"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="imageAlt">Image Alt Text (for SEO)</Label>
+              <Input
+                id="imageAlt"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                placeholder="Describe the image for accessibility"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="buttonLink">Slide Link (Entire slide becomes clickable)</Label>
+              <Input
+                id="buttonLink"
+                value={buttonLink}
+                onChange={(e) => setButtonLink(e.target.value)}
+                placeholder="/products or https://..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional: Enter a URL to make the entire slide a clickable link.
+              </p>
+            </div>
           </div>
         </Card>
 
