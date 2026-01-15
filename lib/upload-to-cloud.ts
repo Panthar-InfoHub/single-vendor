@@ -26,27 +26,14 @@ async function getAuthParams() {
  * @returns Object with successful and failed uploads
  */
 export async function uploadFilesToCloud({ files }: { files: File[] }) {
-  // Step 1: Get authentication parameters once for all uploads
-  let authParams;
-  try {
-    authParams = await getAuthParams();
-  } catch (error: any) {
-    // If auth fails, all uploads fail
-    return {
-      success: [],
-      failed: files.map((file) => ({
-        file,
-        error: `Authentication failed: ${error.message}`,
-      })),
-    };
-  }
-
-  const { signature, expire, token, publicKey } = authParams;
-
-  // Step 2: Upload all files in parallel
+  // Step 1: Upload all files
   const uploadResults = await Promise.allSettled(
     files.map(async (file) => {
       try {
+        // Step 2: Get fresh authentication parameters for EACH file
+        // ImageKit requires a unique token for each upload request
+        const { signature, expire, token, publicKey } = await getAuthParams();
+
         const uploadResponse = await upload({
           file,
           fileName: file.name,
